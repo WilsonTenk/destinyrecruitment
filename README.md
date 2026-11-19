@@ -38,7 +38,7 @@ Search the HTML files for `[` to find every placeholder:
 - Office address, working hours and a Google Maps embed (marked with a TODO in `contact.html`).
 - Commercial registration / Musaned licence number (in every footer).
 - Real customer reviews (homepage, marked with a TODO).
-- The client must confirm the copy we wrote for them: "for years", the 3-month replacement guarantee and its conditions, the selection, training and follow-up steps, and the same-day reply.
+- The client must confirm the copy we wrote for them: "for years", the 3-day replacement guarantee and its conditions, the selection, training and follow-up steps, and the reply within 1 hour.
 
 ## Publishing
 
