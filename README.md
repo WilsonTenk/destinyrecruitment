@@ -35,8 +35,6 @@ Search the HTML files for `[` to find every placeholder:
 
 - Photos: the homepage hero, the team photo and one per service are AI-generated (Higgsfield, Nano Banana Pro) with staff in green uniforms carrying the arch logo. They live in `assets/img/photos/` (WebP). To use real photos instead, save them under the same file names. The full-size originals are in `generated-images/raw/` in the project folder.
 - Office address, working hours and a Google Maps embed (marked with a TODO in `contact.html`).
-- Commercial registration / Musaned licence number (in every footer).
-- Real customer reviews (homepage, marked with a TODO).
 - The client must confirm the copy we wrote for them: "for years", the 3-day replacement guarantee and its conditions, the selection, training and follow-up steps, and the reply within 1 hour.
 
 ## Publishing

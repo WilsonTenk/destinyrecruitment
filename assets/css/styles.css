@@ -240,7 +240,8 @@ p { margin: 0; }
   .reviews-row > * { flex: 0 0 82%; scroll-snap-align: start; }
 }
 .review { background: var(--green-2); border-radius: var(--radius); padding: 28px; display: flex; flex-direction: column; gap: 16px; align-items: center; text-align: center; }
-.review .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--green-line); border: 3px solid var(--yellow); }
+.review .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--green-line); border: 3px solid var(--yellow); display: grid; place-items: center; color: var(--yellow); font: 700 22px var(--font); }
+.review .stars { display: block; color: var(--yellow); letter-spacing: 2px; font-size: 15px; margin-top: 4px; }
 .review strong { display: block; }
 .review small { color: var(--green-muted); }
 .review p { color: #d9e6e0; font-size: 15px; line-height: 1.65; }
