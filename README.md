@@ -42,7 +42,18 @@ Search the HTML files for `[` to find every placeholder:
 
 ## Publishing
 
-Any static host works. Upload the contents of this `site` folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or a normal web host, then point the client's domain at it.
+**Live now on GitHub Pages:** https://wilsontenk.github.io/destinyrecruitment/
+
+GitHub Pages serves the `gh-pages` branch, which holds only the contents of this `site` folder. After committing changes on `main`, run this from the project folder (the one that contains `site`) to update the live site:
+
+```
+git push origin main
+git subtree push --prefix site origin gh-pages
+```
+
+The live site updates a minute or two later.
+
+Other hosts work too. Upload the contents of this `site` folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or a normal web host, then point the client's domain at it.
 
 ## Not built yet
 
