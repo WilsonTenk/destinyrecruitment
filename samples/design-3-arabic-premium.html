@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>نموذج ٣ – فاخر بالعربية | إدينام ديستني للاستقدام</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0e2f45;--navy-2:#16425f;--gold:#d8a646;--gold-l:#f3dca6;--teal:#5fb3a5;--ivory:#fdfaf3;--ink:#1a2731;--muted:#62707a}
+*{box-sizing:border-box;margin:0}
+body{font-family:Tajawal,system-ui,sans-serif;background:var(--ivory);color:var(--ink);line-height:1.8}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1160px;margin:auto;padding:0 20px}
+.hero{background:radial-gradient(ellipse at 20% 40%,var(--navy-2) 0,var(--navy) 60%);color:#fff;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(216,166,70,.18) 1px,transparent 1px);background-size:26px 26px;opacity:.5}
+header{position:relative;display:flex;align-items:center;justify-content:space-between;padding:20px 0}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}
+.brand img{width:56px;border-radius:50%;box-shadow:0 0 0 3px var(--gold)}
+.brand small{display:block;color:var(--gold-l);font-weight:500;font-size:13px}
+nav{display:flex;gap:26px;font-weight:500}
+nav a:hover{color:var(--gold)}
+.lang{border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:14px}
+.hero-grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;padding:50px 0 100px}
+.kicker{color:var(--gold);font-weight:700;letter-spacing:.02em;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.kicker::before{content:"";width:34px;height:2px;background:var(--gold)}
+h1{font-family:Amiri,serif;font-size:clamp(38px,5.4vw,64px);line-height:1.3;margin-bottom:18px}
+h1 span{color:var(--gold)}
+.lead{font-size:19px;color:#c9d6de;max-width:500px;margin-bottom:32px}
+.actions{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:14px 28px;border-radius:12px;font-weight:700;font-size:17px;transition:.2s}
+.btn-gold{background:linear-gradient(180deg,#e7bb5f,var(--gold));color:var(--navy);box-shadow:0 10px 30px rgba(216,166,70,.35)}
+.btn-gold:hover{transform:translateY(-2px)}
+.btn-out{border:1.5px solid var(--gold);color:var(--gold-l)}
+.emblem{justify-self:center;position:relative}
+.emblem img{width:min(420px,78vw);border-radius:50%;box-shadow:0 0 0 10px rgba(216,166,70,.18),0 0 0 22px rgba(216,166,70,.08),0 40px 80px rgba(0,0,0,.45)}
+.wave{position:absolute;bottom:-1px;left:0;width:100%;height:70px;color:var(--ivory)}
+section{padding:80px 0}
+.title{text-align:center;margin-bottom:46px}
+.title h2{font-family:Amiri,serif;font-size:clamp(30px,3.8vw,44px);color:var(--navy);line-height:1.4}
+.title p{color:var(--muted)}
+.orn{color:var(--gold);font-size:22px;letter-spacing:8px}
+.svc{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.c{background:#fff;border-radius:18px;padding:30px 26px;border-top:4px solid var(--gold);box-shadow:0 10px 30px rgba(14,47,69,.06);transition:.25s}
+.c:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(14,47,69,.12)}
+.c .ic{width:60px;height:60px;border-radius:50%;background:var(--navy);display:grid;place-items:center;font-size:26px;margin-bottom:14px;box-shadow:0 0 0 4px var(--gold-l)}
+.c h3{font-size:22px;color:var(--navy);margin-bottom:4px}
+.c p{color:var(--muted)}
+.trust{background:var(--navy);color:#fff}
+.trust .title h2{color:#fff}.trust .title p{color:#b8c8d2}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;text-align:center}
+.t-grid div{padding:26px;border:1px solid rgba(216,166,70,.3);border-radius:18px}
+.t-grid b{display:block;font-family:Amiri,serif;font-size:44px;color:var(--gold);line-height:1.2}
+.faq{max-width:780px;margin:auto;display:grid;gap:12px}
+details{background:#fff;border-radius:14px;padding:18px 22px;box-shadow:0 6px 20px rgba(14,47,69,.05)}
+summary{font-weight:700;color:var(--navy);cursor:pointer;font-size:17px}
+details p{color:var(--muted);margin-top:8px}
+footer{background:#0a2232;color:#9fb3c0;padding:46px 0 30px;text-align:center}
+footer img{width:76px;border-radius:50%;margin-bottom:10px}
+footer .ph{color:var(--gold-l);font-size:18px;font-weight:700;margin:6px 0 14px}
+.wa{position:fixed;left:20px;bottom:20px;background:#25d366;color:#fff;border-radius:999px;padding:12px 20px;font-weight:700;box-shadow:0 10px 26px rgba(0,0,0,.25)}
+@media(max-width:880px){nav{display:none}.hero-grid{grid-template-columns:1fr;text-align:center}.kicker,.actions{justify-content:center}.lead{margin-inline:auto}.svc,.t-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <header>
+    <a class="brand" href="#"><img src="assets/logo-badge.png" alt="شعار إدينام ديستني"><span>إدينام ديستني<small>للاستقدام</small></span></a>
+    <nav><a href="#">الرئيسية</a><a href="#services">خدماتنا</a><a href="#trust">لماذا نحن</a><a href="#faq">أسئلة شائعة</a></nav>
+    <a class="lang" href="#">English</a>
+  </header>
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">موثوقون لدى العائلات في الرياض</div>
+      <h1>نختار من يدخل بيتك <span>كما نختار لبيوتنا</span></h1>
+      <p class="lead">مربيات، طباخات، عاملات تنظيف ومرافقات رعاية — مدرّبات ومؤهلات، مع ضمان استبدال لمدة ٣ أشهر.</p>
+      <div class="actions"><a class="btn btn-gold" href="https://wa.me/966544827315">احجز عبر واتساب</a><a class="btn btn-out" href="tel:0544827315">اتصل بنا</a></div>
+    </div>
+    <div class="emblem"><img src="assets/logo-badge.png" alt=""></div>
+  </div>
+</div>
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path fill="currentColor" d="M0 40c240 40 480 40 720 10s480-40 720 0v20H0z"/></svg>
+</div>
+
+<section id="services"><div class="wrap">
+  <div class="title"><div class="orn">✦ ✦ ✦</div><h2>خدماتنا</h2><p>عمالة مدرّبة للعائلات والمدارس والشركات</p></div>
+  <div class="svc">
+    <div class="c"><div class="ic">👶</div><h3>مربيات</h3><p>رعاية حنونة ومنتبهة لأطفالك في كل الأعمار.</p></div>
+    <div class="c"><div class="ic">🍲</div><h3>طباخات</h3><p>وجبات عائلية يومية ومأكولات عربية وعالمية.</p></div>
+    <div class="c"><div class="ic">🧹</div><h3>عاملات تنظيف</h3><p>للمنازل والمدارس والمكاتب — بالساعة أو بالشهر.</p></div>
+    <div class="c"><div class="ic">🤝</div><h3>مرافقات رعاية</h3><p>عناية لطيفة ورفقة لكبار السن.</p></div>
+    <div class="c"><div class="ic">☕</div><h3>طاقم ضيافة</h3><p>للمناسبات والمكاتب والاستقبال.</p></div>
+    <div class="c"><div class="ic">🏠</div><h3>عاملات منزلية</h3><p>مساعدة شاملة لإدارة شؤون البيت.</p></div>
+  </div>
+</div></section>
+
+<section class="trust" id="trust"><div class="wrap">
+  <div class="title"><div class="orn">✦ ✦ ✦</div><h2>لماذا تختارنا؟</h2><p>الأمانة والعناية والوضوح من أول رسالة</p></div>
+  <div class="t-grid">
+    <div><b>٣ أشهر</b>ضمان استبدال مجاني</div>
+    <div><b>يوم واحد</b>نرد على طلبك عادةً في اليوم نفسه</div>
+    <div><b>١٠٠٪</b>مقابلة شخصية وتحقق من الوثائق</div>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="title"><div class="orn">✦ ✦ ✦</div><h2>أسئلة شائعة</h2></div>
+  <div class="faq">
+    <details open><summary>كم يستغرق الحجز؟</summary><p>عادةً نرد على طلبك في اليوم نفسه، ونرتب موعد البدء حسب الخدمة والتوفر.</p></details>
+    <details><summary>ما طرق الدفع المتاحة؟</summary><p>نقدًا، أو تحويل بنكي، أو STC Pay.</p></details>
+    <details><summary>هل يمكن الحجز بالساعة؟</summary><p>نعم، نوفّر الحجز بالساعة وبالشهر وبعقود أطول حسب احتياجك.</p></details>
+    <details><summary>هل تخدمون الشركات والمدارس؟</summary><p>نعم، نوفّر عاملات تنظيف وطاقم ضيافة للمدارس والشركات والمناسبات.</p></details>
+  </div>
+</div></section>
+
+<footer><img src="assets/logo-badge.png" alt=""><div>إدينام ديستني للاستقدام — الرياض</div><div class="ph">0544827315 · 0596917524</div><small>© 2026 جميع الحقوق محفوظة</small></footer>
+<a class="wa" href="https://wa.me/966544827315">💬 واتساب</a>
+</body>
+</html>

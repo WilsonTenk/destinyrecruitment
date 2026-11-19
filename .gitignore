@@ -1,0 +1,9 @@
+# Client's private details (name, email, phone, budget) — never publish
+client-brief/
+
+# Local editor / tool settings
+.claude/settings.local.json
+
+# OS clutter
+Thumbs.db
+.DS_Store
