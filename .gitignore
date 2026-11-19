@@ -7,3 +7,4 @@ client-brief/
 # OS clutter
 Thumbs.db
 .DS_Store
+generated-images/raw/

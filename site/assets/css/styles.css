@@ -266,6 +266,7 @@ p { margin: 0; }
 .svc[hidden] { display: none; }
 .svc-photo { height: 210px; border-radius: 50% 50% 18px 18px / 130px 130px 18px 18px; display: grid; place-items: center; text-align: center; padding: 24px; font-size: 13px; color: var(--muted); overflow: hidden; }
 .svc-photo img { width: 100%; height: 100%; object-fit: cover; }
+.svc-photo:has(img) { padding: 0; }
 .svc-body { padding: 20px 12px 10px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
 .svc-title { display: flex; align-items: center; gap: 12px; }
 .svc-title .icon-tile { width: 42px; height: 42px; border-radius: 13px; }
