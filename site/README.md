@@ -34,7 +34,6 @@ Then open http://localhost:5173 in a browser.
 Search the HTML files for `[` to find every placeholder:
 
 - Photos: the homepage hero, the team photo and one per service are AI-generated (Higgsfield, Nano Banana Pro) with staff in green uniforms carrying the arch logo. They live in `assets/img/photos/` (WebP). To use real photos instead, save them under the same file names. The full-size originals are in `generated-images/raw/` in the project folder.
-- Prices (hourly and monthly) for each service.
 - Office address, working hours and a Google Maps embed (marked with a TODO in `contact.html`).
 - Commercial registration / Musaned licence number (in every footer).
 - Real customer reviews (homepage, marked with a TODO).
@@ -54,6 +53,10 @@ git subtree push --prefix site origin gh-pages
 The live site updates a minute or two later.
 
 Other hosts work too. Upload the contents of this `site` folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or a normal web host, then point the client's domain at it.
+
+## Pricing
+
+No fixed prices are shown. Each Services card says the price is agreed with the customer, and the Services intro explains that every home gets the best deal. To show real prices later, edit the `price.label` / `price.value` lines in `services.html` (English) and `assets/js/i18n-ar.js` (Arabic).
 
 ## Not built yet
 
