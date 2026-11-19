@@ -4,7 +4,7 @@ Tone: warm and family-focused. Arabic is the main version; English follows.
 
 > **Confirm with the client before launch** (written by us, not supplied by them):
 > - "for years" / "منذ سنوات" – kept vague on purpose, no number given.
-> - 3-month free replacement guarantee and its conditions.
+> - 3-day free replacement guarantee and its conditions.
 > - That workers are interviewed, have their documents checked and get trained before starting.
 > - Same-day reply to bookings.
 > Still needed from the client: commercial registration / Musaned licence number, office address, working hours, real photos.
@@ -26,13 +26,13 @@ Tone: warm and family-focused. Arabic is the main version; English follows.
 - **المتابعة:** نبقى على تواصل معك ومع العاملة بعد البدء، وأي ملاحظة تصلنا عبر واتساب نتعامل معها فورًا.
 
 ### ضمان الاستبدال
-راحتك أولويتنا. إذا لم تكن العاملة مناسبة لك خلال أول ٣ أشهر، نستبدلها دون أي تكلفة إضافية.
-- **مدة الضمان:** ٣ أشهر
+راحتك أولويتنا. إذا لم تكن العاملة مناسبة لك خلال أول ٣ أيام، نستبدلها دون أي تكلفة إضافية.
+- **مدة الضمان:** ٣ أيام
 - **متى يحق الاستبدال:** عدم التوافق مع العائلة أو عدم الالتزام بالعمل
 - **كيف تطلبه:** رسالة واتساب واحدة
 
 ### أسئلة شائعة
-- **كم يستغرق الحجز؟** عادةً نرد على طلبك في اليوم نفسه، ونرتب موعد البدء حسب الخدمة والتوفر.
+- **كم يستغرق الحجز؟** عادةً نرد على طلبك خلال أقل من ساعة، ونرتب موعد البدء حسب الخدمة والتوفر.
 - **ما طرق الدفع المتاحة؟** نقدًا، أو تحويل بنكي، أو STC Pay.
 - **هل يمكن الحجز بالساعة؟** نعم، نوفّر الحجز بالساعة وبالشهر وبعقود أطول حسب احتياجك.
 - **هل تخدمون الشركات والمدارس؟** نعم، نوفّر عاملات تنظيف وطاقم ضيافة للمدارس والشركات والمناسبات.
@@ -54,13 +54,13 @@ For years we have helped families across Riyadh find people they can trust with 
 - **Follow-up:** We stay in touch with you and the worker after she starts. Any concern you send us on WhatsApp is handled right away.
 
 ### Replacement guarantee
-Your peace of mind comes first. If the worker isn't the right fit within the first 3 months, we replace her at no extra cost.
-- **Guarantee period:** 3 months
+Your peace of mind comes first. If the worker isn't the right fit within the first 3 days, we replace her at no extra cost.
+- **Guarantee period:** 3 days
 - **When it applies:** not a good fit for the family, or not committed to the work
 - **How to ask:** one WhatsApp message
 
 ### FAQ
-- **How long does booking take?** We usually reply the same day and arrange a start date based on the service and availability.
+- **How long does booking take?** We usually reply within an hour and arrange a start date based on the service and availability.
 - **How can I pay?** Cash, bank transfer or STC Pay.
 - **Can I book by the hour?** Yes – hourly, monthly, or longer contracts, whatever you need.
 - **Do you serve companies and schools?** Yes – cleaners and hospitality staff for schools, offices and events.
