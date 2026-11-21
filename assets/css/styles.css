@@ -471,3 +471,5 @@ body.has-request-bar .fab { bottom: 92px; }
 .field-set { border: 0; margin: 0; padding: 0; min-width: 0; }
 .field-set legend { padding: 0; margin-bottom: 8px; }
 .field-set .hint { font-weight: 400; color: var(--muted); }
+.page-hero-actions { justify-content: center; padding-top: 6px; }
+@media (max-width: 900px) { .page-hero-actions { justify-content: flex-start; width: 100%; } }
