@@ -85,4 +85,6 @@ $sql = 'INSERT INTO requests(' . implode(',', $cols) . ', status, ip_hash, creat
      . implode(',', array_fill(0, count($cols), '?')) . ", 'new', ?, ?, ?)";
 db()->prepare($sql)->execute(array_merge(array_values($row), [$ipHash, $now, $now]));
 
+notify_new_request((int)db()->lastInsertId(), $row);
+
 reply(200, ['ok' => true]);
