@@ -85,6 +85,13 @@ $sql = 'INSERT INTO requests(' . implode(',', $cols) . ', status, ip_hash, creat
      . implode(',', array_fill(0, count($cols), '?')) . ", 'new', ?, ?, ?)";
 db()->prepare($sql)->execute(array_merge(array_values($row), [$ipHash, $now, $now]));
 
-notify_new_request((int)db()->lastInsertId(), $row);
+$requestId = (int)db()->lastInsertId();
+
+// Forms also open WhatsApp, so they count in the WhatsApp report too (linked to this request).
+$page = is_string($data['page'] ?? null) && preg_match('/^[a-z0-9-]{0,90}(\.html)?$/', strtolower($data['page'])) ? strtolower($data['page']) : '';
+db()->prepare('INSERT INTO wa_clicks(created_at, source, page, services, lang, request_id, ip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    ->execute([$now, $kind === 'build' ? 'builder' : 'callback', $page, $row['services'], $row['lang'], $requestId, $ipHash]);
+
+notify_new_request($requestId, $row);
 
 reply(200, ['ok' => true]);

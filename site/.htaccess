@@ -9,8 +9,8 @@ AddDefaultCharset UTF-8
 AddType image/webp .webp
 AddType image/svg+xml .svg
 
-# Keep internal files private
-<FilesMatch "^(README\.md|\.cpanel\.yml|\.git.*)$|\.(sqlite|sqlite-wal|sqlite-shm|json\.bak)$">
+# Keep internal files private: hidden files, notes, databases, logs, backups and editor leftovers
+<FilesMatch "^\.|^(README\.md|\.cpanel\.yml)$|\.(sqlite|sqlite-wal|sqlite-shm|db|sql|log|bak|old|orig|save|swp|tmp|dist|ini|phps|sh|zip|tar|gz|rar|7z)$|~$">
   Require all denied
 </FilesMatch>
 RedirectMatch 404 /\.git
@@ -30,6 +30,16 @@ RedirectMatch 404 /\.git
   # Private folders (each also has its own "deny" file)
   RewriteRule ^(inc|data)(/|$) - [R=404,L]
 
+  # Block old debugging methods and junk requests used by attack tools
+  RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK|DEBUG|CONNECT)$ [NC]
+  RewriteRule ^ - [F,L]
+  # Only the two form endpoints accept posts; everything else on the public site is read-only
+  RewriteCond %{REQUEST_METHOD} =POST
+  RewriteCond %{REQUEST_URI} !^/(admin/|api/(request|track)\.php$)
+  RewriteRule ^ - [F,L]
+  # Common hacking probes for other website systems (WordPress etc.) get a plain "not found"
+  RewriteRule ^(wp-admin|wp-login\.php|wp-content|wp-includes|xmlrpc\.php|phpmyadmin|pma|\.env|vendor/|config\.php) - [R=404,L,NC]
+
   # Optional: pick one address for the site. Uncomment ONE block.
   # (a) Send www.example.com to example.com
   # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
@@ -46,6 +56,7 @@ RedirectMatch 404 /\.git
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
   Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
   Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always set X-Permitted-Cross-Domain-Policies "none"
   # Same rules as the pages' own meta tag, plus frame-ancestors (only works as a header)
   Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src https://www.google.com https://maps.google.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
   # HSTS: tells browsers to always use HTTPS. Uncomment ONLY after HTTPS works

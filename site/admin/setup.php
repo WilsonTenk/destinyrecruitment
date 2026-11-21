@@ -25,22 +25,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = clean_text($_POST['username'] ?? '', 40);
     $pass = (string)($_POST['password'] ?? '');
     $pass2 = (string)($_POST['password2'] ?? '');
-    if (!hash_equals($expected, $key)) {
+    if (too_many_attempts()) {
+        $error = 'Too many failed attempts. Please wait 15 minutes and try again.';
+    } elseif (!hash_equals($expected, $key)) {
+        record_failed_attempt('', 'wrong setup key');
         $error = 'The setup key is not correct.';
     } elseif (!preg_match('/^[A-Za-z0-9_.-]{3,40}$/', $user)) {
         $error = 'Username: 3–40 letters, numbers, dots, dashes or underscores.';
-    } elseif (strlen($pass) < 10) {
-        $error = 'Password must be at least 10 characters.';
+    } elseif (($problem = password_problem($pass, $user)) !== null) {
+        $error = $problem;
     } elseif ($pass !== $pass2) {
         $error = 'The two passwords do not match.';
     } else {
         db()->prepare('INSERT INTO users(username, password_hash, created_at) VALUES (?, ?, ?)')
             ->execute([$user, password_hash($pass, PASSWORD_DEFAULT), ed_now()]);
         @unlink($keyFile);
-        session_regenerate_id(true);
-        $_SESSION['uid'] = (int)db()->lastInsertId();
-        flash('Your admin account is ready.');
-        header('Location: requests.php');
+        $st = db()->prepare('SELECT * FROM users WHERE id = ?');
+        $st->execute([(int)db()->lastInsertId()]);
+        ed_finish_login($st->fetch(), 'first setup');
+        flash('Your admin account is ready. Next: add your email and turn on two-step login below.');
+        header('Location: settings.php');
         exit;
     }
 }
@@ -57,8 +61,8 @@ admin_header('Set up');
         <?= csrf_field() ?>
         <label>Setup key<input type="text" name="key" required></label>
         <label>Username<input type="text" name="username" required autocomplete="username"></label>
-        <label>Password <span class="hint">At least 10 characters.</span><input type="password" name="password" required minlength="10" autocomplete="new-password"></label>
-        <label>Repeat password<input type="password" name="password2" required minlength="10" autocomplete="new-password"></label>
+        <label>Password <span class="hint">At least 12 characters. A short sentence works well.</span><input type="password" name="password" required minlength="12" autocomplete="new-password"></label>
+        <label>Repeat password<input type="password" name="password2" required minlength="12" autocomplete="new-password"></label>
         <button class="btn btn-orange" type="submit">Create account</button>
       </form>
     </div>

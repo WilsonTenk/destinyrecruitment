@@ -121,13 +121,33 @@
   }
 
   /* Keep a copy of a form in the admin inbox (cPanel only). Never blocks WhatsApp. */
+  function canBeacon() {
+    return /^https?:$/.test(location.protocol) && !/github\.io$/.test(location.hostname) && !!navigator.sendBeacon;
+  }
+  function pageName() { return (location.pathname.split('/').pop() || 'index.html').toLowerCase(); }
   function saveRequest(payload) {
     try {
-      if (/github\.io$/.test(location.hostname) || !navigator.sendBeacon) return;
+      if (!canBeacon()) return;
       payload.lang = html.lang;
+      payload.page = pageName();
       navigator.sendBeacon('api/request.php', new Blob([JSON.stringify(payload)], { type: 'text/plain' }));
     } catch (e) { /* ignore */ }
   }
+  /* Count clicks on WhatsApp buttons for the admin WhatsApp report (anonymous, cPanel only). */
+  function trackWhatsApp(e) {
+    try {
+      var a = e.target && e.target.closest ? e.target.closest('a[href*="wa.me/"]') : null;
+      if (!a || !canBeacon()) return;
+      var source = a.classList.contains('fab') ? 'fab'
+        : a.closest('#mobile-menu') ? 'menu'
+        : a.closest('header') ? 'header'
+        : a.closest('footer') ? 'footer'
+        : a.classList.contains('contact-card') ? 'contact-card' : 'page';
+      navigator.sendBeacon('api/track.php', new Blob([JSON.stringify({ source: source, page: pageName(), lang: html.lang })], { type: 'text/plain' }));
+    } catch (err) { /* never block the click */ }
+  }
+  document.addEventListener('click', trackWhatsApp, true);
+  document.addEventListener('auxclick', function (e) { if (e.button === 1) trackWhatsApp(e); }, true);
   /* English names of the checked choices, so the inbox reads the same whatever the visitor's language. */
   function englishLabels(formEl, name) {
     return Array.prototype.slice.call(formEl.querySelectorAll('input[name="' + name + '"]:checked'))

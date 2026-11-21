@@ -12,6 +12,7 @@ function admin_header(string $title, ?array $user = null, string $active = ''): 
     header('Content-Type: text/html; charset=utf-8');
     $nav = [
         'requests' => ['requests.php', 'Requests'],
+        'whatsapp' => ['whatsapp.php', 'WhatsApp'],
         'posts' => ['posts.php', 'Blog'],
         'services' => ['services.php', 'Availability'],
         'settings' => ['settings.php', 'Settings'],
@@ -28,7 +29,7 @@ function admin_header(string $title, ?array $user = null, string $active = ''): 
   <meta name="robots" content="noindex, nofollow">
   <title><?= h($title) ?> – Edinam Destiny admin</title>
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="assets/admin.css?v=1">
+  <link rel="stylesheet" href="assets/admin.css?v=3">
 </head>
 <body>
 <?php if ($user): ?>
