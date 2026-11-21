@@ -52,9 +52,14 @@ The live site updates a minute or two later.
 
 Other hosts work too. Upload the contents of this `site` folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or a normal web host, then point the client's domain at it.
 
-## Pricing
+## Pricing and requests
 
-No fixed prices are shown. Each Services card says the price is agreed with the customer, and the Services intro explains that every home gets the best deal. To show real prices later, edit the `price.label` / `price.value` lines in `services.html` (English) and `assets/js/i18n-ar.js` (Arabic).
+No fixed prices are shown. Instead:
+
+- Each Services card lists how it can be booked (for example *Hourly · Monthly · Live-in*) and has an **Add to request** button.
+- **How pricing works** on the Services page explains what the price depends on (home type and size, outdoor areas, services combined, schedule, who needs care, area).
+- **Build your request** (`services.html#request`) lets visitors pick one or more services and describe their home, then sends it all as one WhatsApp message.
+- The Contact page's call-back form also accepts several services.
 
 ## Not built yet
 

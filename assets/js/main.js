@@ -102,6 +102,13 @@
     });
   });
 
+  /* Text of the checked choices in a form group, in the current language. */
+  function checkedLabels(formEl, name) {
+    return Array.prototype.slice.call(formEl.querySelectorAll('input[name="' + name + '"]:checked'))
+      .map(function (input) { return input.nextElementSibling.textContent.trim(); });
+  }
+  function joinList(items) { return items.join(html.lang === 'ar' ? '، ' : ', '); }
+
   /* ---------- Call-back form → WhatsApp ---------- */
   var form = document.getElementById('callback-form');
   if (form) {
@@ -111,14 +118,95 @@
       var ar = html.lang === 'ar';
       var name = form.elements.name.value.trim();
       var phone = form.elements.phone.value.trim();
-      var service = form.elements.service.options[form.elements.service.selectedIndex].text;
+      var services = checkedLabels(form, 'service');
       var msg = form.elements.message.value.trim();
       var lines = ar
-        ? ['مرحبًا، أرجو الاتصال بي.', 'الاسم: ' + name, 'الجوال: ' + phone, 'الخدمة: ' + service]
-        : ['Hello, please call me back.', 'Name: ' + name, 'Mobile: ' + phone, 'Service: ' + service];
+        ? ['مرحبًا، أرجو الاتصال بي.', 'الاسم: ' + name, 'الجوال: ' + phone]
+        : ['Hello, please call me back.', 'Name: ' + name, 'Mobile: ' + phone];
+      if (services.length) lines.push((ar ? 'الخدمات: ' : 'Services: ') + joinList(services));
       if (msg) lines.push((ar ? 'رسالة: ' : 'Message: ') + msg);
       window.open(waUrl(lines.join('\n')), '_blank', 'noopener');
     });
+  }
+
+  /* ---------- Request builder (Services page) ---------- */
+  var reqForm = document.getElementById('request-form');
+  if (reqForm) {
+    var addBtns = document.querySelectorAll('[data-add-service]');
+    var bar = document.getElementById('request-bar');
+    var countEl = document.getElementById('request-count');
+    var errorEl = document.getElementById('request-error');
+    var builderVisible = false;
+
+    function serviceBox(key) { return reqForm.querySelector('input[name="services"][value="' + key + '"]'); }
+    function selectedCount() { return reqForm.querySelectorAll('input[name="services"]:checked').length; }
+
+    function refresh() {
+      addBtns.forEach(function (btn) {
+        var on = serviceBox(btn.dataset.addService).checked;
+        btn.setAttribute('aria-pressed', String(on));
+        var card = btn.closest('.svc');
+        if (card) card.classList.toggle('is-added', on);
+      });
+      var n = selectedCount();
+      countEl.textContent = html.lang === 'ar' ? n.toLocaleString('ar-EG') : n;
+      var show = n > 0 && !builderVisible;
+      bar.hidden = !show;
+      document.body.classList.toggle('has-request-bar', show);
+      if (n > 0) errorEl.textContent = '';
+    }
+
+    addBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var box = serviceBox(btn.dataset.addService);
+        box.checked = !box.checked;
+        refresh();
+      });
+    });
+    reqForm.addEventListener('change', refresh);
+    /* Run after the language switch has applied, so the count uses the right digits. */
+    document.querySelectorAll('.lang-btn').forEach(function (b) { b.addEventListener('click', function () { setTimeout(refresh, 0); }); });
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        builderVisible = entries[0].isIntersecting;
+        refresh();
+      }, { threshold: 0.15 }).observe(reqForm);
+    }
+
+    reqForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ar = html.lang === 'ar';
+      var services = checkedLabels(reqForm, 'services');
+      if (!services.length) {
+        errorEl.textContent = ar ? 'اختر خدمة واحدة على الأقل.' : 'Please pick at least one service.';
+        reqForm.querySelector('input[name="services"]').focus();
+        return;
+      }
+      var home = checkedLabels(reqForm, 'home').concat(checkedLabels(reqForm, 'size'));
+      var extras = checkedLabels(reqForm, 'extras');
+      var care = checkedLabels(reqForm, 'care');
+      var schedule = checkedLabels(reqForm, 'schedule');
+      var area = reqForm.elements.area.value.trim();
+      var start = reqForm.elements.start.value;
+      var notes = reqForm.elements.notes.value.trim();
+      var L = ar
+        ? { hi: 'مرحبًا، أود الحصول على عرض سعر من إدينام ديستني.', services: 'الخدمات: ', home: 'المنزل: ', extras: 'إضافات: ',
+            care: 'الرعاية: ', schedule: 'الجدول: ', area: 'الحي: ', start: 'تاريخ البدء: ', notes: 'ملاحظات: ' }
+        : { hi: "Hello, I'd like a quote from Edinam Destiny.", services: 'Services: ', home: 'Home: ', extras: 'Also: ',
+            care: 'Care for: ', schedule: 'Schedule: ', area: 'Area: ', start: 'Start date: ', notes: 'Notes: ' };
+      var lines = [L.hi, L.services + joinList(services)];
+      if (home.length) lines.push(L.home + joinList(home));
+      if (extras.length) lines.push(L.extras + joinList(extras));
+      if (care.length) lines.push(L.care + joinList(care));
+      if (schedule.length) lines.push(L.schedule + joinList(schedule));
+      if (area) lines.push(L.area + area);
+      if (start) lines.push(L.start + start);
+      if (notes) lines.push(L.notes + notes);
+      window.open(waUrl(lines.join('\n')), '_blank', 'noopener');
+    });
+
+    refresh();
   }
 
   /* ---------- Language button ---------- */
