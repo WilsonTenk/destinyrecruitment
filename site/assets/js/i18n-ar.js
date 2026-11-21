@@ -198,6 +198,7 @@ window.DESTINY_AR = {
   'form.send': 'أرسل عبر واتساب',
   'form.note': 'يُفتح طلبك في واتساب جاهزًا للإرسال إلى فريقنا.',
   'home.build': 'اطلب خدمتك',
+  'svcp.build': 'اطلب خدمتك',
   'form.services': 'الخدمات المطلوبة <span class="hint">(اختر واحدة أو أكثر)</span>',
   'opt.label': 'يمكن حجزها',
   'opt.nanny': 'بالساعة · بالشهر · مقيمة',
