@@ -1,0 +1,15 @@
+---
+# cPanel "Git Version Control" deployment.
+# When you press "Deploy HEAD Commit" in cPanel, these commands copy the
+# website (the site/ folder) into public_html. Other files already in
+# public_html (for example .well-known used by the free SSL certificate)
+# are left alone.
+#
+# If your website lives somewhere other than public_html (for example an
+# addon domain folder), change DEPLOYPATH below.
+deployment:
+  tasks:
+    - export DEPLOYPATH=$HOME/public_html/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R site/. $DEPLOYPATH
+    - /bin/rm -f ${DEPLOYPATH}README.md
