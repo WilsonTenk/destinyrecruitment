@@ -40,10 +40,15 @@
     });
 
     var titleKey = document.body.dataset.titleKey;
-    if (titleKey) {
-      if (!document.body.dataset.enTitle) document.body.dataset.enTitle = document.title;
-      document.title = ar && dict[titleKey] ? dict[titleKey] : document.body.dataset.enTitle;
-    }
+    var titleAr = titleKey ? dict[titleKey] : document.body.dataset.titleAr;
+    if (!document.body.dataset.enTitle) document.body.dataset.enTitle = document.title;
+    document.title = ar && titleAr ? titleAr : document.body.dataset.enTitle;
+
+    /* Arabic image descriptions on admin-written articles */
+    document.querySelectorAll('[data-alt-ar]').forEach(function (img) {
+      if (img.dataset.altEn === undefined) img.dataset.altEn = img.getAttribute('alt') || '';
+      img.setAttribute('alt', ar && img.dataset.altAr ? img.dataset.altAr : img.dataset.altEn);
+    });
 
     document.querySelectorAll('.lang-btn').forEach(function (btn) {
       btn.textContent = ar ? 'English' : 'عربي';
@@ -52,6 +57,84 @@
     });
 
     updateWhatsAppLinks(lang);
+    applyLive();
+  }
+
+  /* ---------- Live details from the admin (cPanel only) ----------
+     Availability labels and contact details come from api/site.php when the
+     site runs on the PHP server. Anywhere else the page keeps its built-in text. */
+  var live = null;
+  function formatPhone(p) {
+    var d = String(p || '').replace(/[^\d]/g, '');
+    if (d.indexOf('966') === 0 && d.length === 12) return '+966 ' + d.slice(3, 5) + ' ' + d.slice(5, 8) + ' ' + d.slice(8);
+    return p ? (String(p).charAt(0) === '+' ? p : '+' + d) : '';
+  }
+  function applyLive() {
+    if (!live) return;
+    var ar = html.lang === 'ar';
+    var av = live.availability || {};
+    document.querySelectorAll('[data-avail]').forEach(function (el) {
+      var v = av[el.dataset.avail];
+      if (!v) return;
+      var key = 'status.' + v;
+      var en = { ok: 'Available now', ahead: 'Book ahead', off: 'Fully booked' }[v];
+      el.classList.remove('ok', 'ahead', 'off');
+      el.classList.add(v);
+      el.dataset.i18n = key;
+      el.dataset.en = en;
+      el.innerHTML = ar && dict[key] ? dict[key] : en;
+    });
+    var c = live.contact || {};
+    document.querySelectorAll('[data-setting]').forEach(function (el) {
+      var k = el.dataset.setting;
+      if (k === 'phone1' || k === 'phone2') {
+        if (!c[k]) { if (el.tagName === 'A' || el.tagName === 'SPAN') el.hidden = true; return; }
+        el.hidden = false;
+        el.textContent = formatPhone(c[k]);
+        if (el.tagName === 'A') el.href = 'tel:' + c[k];
+      } else if (k === 'whatsapp' && c.whatsapp) {
+        el.textContent = formatPhone(c.whatsapp);
+      } else if ((k === 'hours' || k === 'address') && (c[k + '_en'] || c[k + '_ar'])) {
+        el.textContent = ar ? (c[k + '_ar'] || c[k + '_en']) : (c[k + '_en'] || c[k + '_ar']);
+      } else if (k === 'maps' && c.maps_url) {
+        el.href = c.maps_url;
+        el.target = '_blank';
+        el.rel = 'noopener';
+      }
+    });
+  }
+  function loadLive() {
+    if (!/^https?:$/.test(location.protocol) || /github\.io$/.test(location.hostname)) return;
+    if (!window.fetch) return;
+    fetch('api/site.php', { credentials: 'same-origin', cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (!data || !data.availability) return;
+        live = data;
+        if (live.contact && /^\d{8,15}$/.test(live.contact.whatsapp || '')) {
+          WA_NUMBER = live.contact.whatsapp;
+          updateWhatsAppLinks(html.lang);
+        }
+        applyLive();
+      })
+      .catch(function () { /* no server-side admin here: keep the built-in text */ });
+  }
+
+  /* Keep a copy of a form in the admin inbox (cPanel only). Never blocks WhatsApp. */
+  function saveRequest(payload) {
+    try {
+      if (/github\.io$/.test(location.hostname) || !navigator.sendBeacon) return;
+      payload.lang = html.lang;
+      navigator.sendBeacon('api/request.php', new Blob([JSON.stringify(payload)], { type: 'text/plain' }));
+    } catch (e) { /* ignore */ }
+  }
+  /* English names of the checked choices, so the inbox reads the same whatever the visitor's language. */
+  function englishLabels(formEl, name) {
+    return Array.prototype.slice.call(formEl.querySelectorAll('input[name="' + name + '"]:checked'))
+      .map(function (input) {
+        var span = input.nextElementSibling;
+        return (span.dataset.en || span.textContent).replace(/<[^>]+>/g, '').trim();
+      });
   }
 
   /* ---------- WhatsApp ---------- */
@@ -126,6 +209,8 @@
       if (services.length) lines.push((ar ? 'الخدمات: ' : 'Services: ') + joinList(services));
       if (msg) lines.push((ar ? 'رسالة: ' : 'Message: ') + msg);
       window.open(waUrl(lines.join('\n')), '_blank', 'noopener');
+      saveRequest({ kind: 'callback', name: name, phone: phone, services: englishLabels(form, 'service'), notes: msg,
+                    website: form.elements.website ? form.elements.website.value : '' });
     });
   }
 
@@ -190,12 +275,17 @@
       var area = reqForm.elements.area.value.trim();
       var start = reqForm.elements.start.value;
       var notes = reqForm.elements.notes.value.trim();
+      var name = reqForm.elements.name ? reqForm.elements.name.value.trim() : '';
+      var phone = reqForm.elements.phone ? reqForm.elements.phone.value.trim() : '';
       var L = ar
-        ? { hi: 'مرحبًا، أود الحصول على عرض سعر من إدينام ديستني.', services: 'الخدمات: ', home: 'المنزل: ', extras: 'إضافات: ',
+        ? { hi: 'مرحبًا، أود الحصول على عرض سعر من إدينام ديستني.', name: 'الاسم: ', phone: 'الجوال: ', services: 'الخدمات: ', home: 'المنزل: ', extras: 'إضافات: ',
             care: 'الرعاية: ', schedule: 'الجدول: ', area: 'الحي: ', start: 'تاريخ البدء: ', notes: 'ملاحظات: ' }
-        : { hi: "Hello, I'd like a quote from Edinam Destiny.", services: 'Services: ', home: 'Home: ', extras: 'Also: ',
+        : { hi: "Hello, I'd like a quote from Edinam Destiny.", name: 'Name: ', phone: 'Mobile: ', services: 'Services: ', home: 'Home: ', extras: 'Also: ',
             care: 'Care for: ', schedule: 'Schedule: ', area: 'Area: ', start: 'Start date: ', notes: 'Notes: ' };
-      var lines = [L.hi, L.services + joinList(services)];
+      var lines = [L.hi];
+      if (name) lines.push(L.name + name);
+      if (phone) lines.push(L.phone + phone);
+      lines.push(L.services + joinList(services));
       if (home.length) lines.push(L.home + joinList(home));
       if (extras.length) lines.push(L.extras + joinList(extras));
       if (care.length) lines.push(L.care + joinList(care));
@@ -204,6 +294,12 @@
       if (start) lines.push(L.start + start);
       if (notes) lines.push(L.notes + notes);
       window.open(waUrl(lines.join('\n')), '_blank', 'noopener');
+      saveRequest({
+        kind: 'build', name: name, phone: phone, services: englishLabels(reqForm, 'services'),
+        home: englishLabels(reqForm, 'home').concat(englishLabels(reqForm, 'size')), extras: englishLabels(reqForm, 'extras'),
+        care: englishLabels(reqForm, 'care'), schedule: englishLabels(reqForm, 'schedule'),
+        area: area, start: start, notes: notes, website: reqForm.elements.website ? reqForm.elements.website.value : ''
+      });
     });
 
     refresh();
@@ -222,4 +318,5 @@
   if (year) year.textContent = new Date().getFullYear();
 
   applyLang(storedLang());
+  loadLive();
 })();
