@@ -4,6 +4,7 @@
  * PHP's built-in server:
  *   php -S localhost:8080 -t site tools/dev-router.php
  */
+putenv('ED_MAIL_LOG=1'); // local testing: write emails to destiny-data/mail-log.txt
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 $root = $_SERVER['DOCUMENT_ROOT'];
 

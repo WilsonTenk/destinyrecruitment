@@ -36,6 +36,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: settings.php');
             exit;
         }
+    } elseif (($_POST['form'] ?? '') === 'notify') {
+        $email = strtolower(clean_text($_POST['notify_email'] ?? '', 190));
+        $from = strtolower(clean_text($_POST['mail_from'] ?? '', 190));
+        if ($email !== '' && !ed_valid_email($email)) {
+            $errors[] = 'Please enter a valid email address to receive alerts.';
+        }
+        if ($from !== '' && !ed_valid_email($from)) {
+            $errors[] = 'The "send from" address is not a valid email address.';
+        }
+        if (!$errors) {
+            save_setting('notify_email', $email);
+            save_setting('mail_from', $from);
+            save_setting('notify_on', isset($_POST['notify_on']) ? '1' : '0');
+            if (isset($_POST['test'])) {
+                if ($email === '') {
+                    flash('Saved. Add an email address first to send a test.');
+                } else {
+                    $ok = ed_mail($email, 'Test email from your Edinam Destiny website',
+                        "This is a test. If you can read this, new request alerts will reach this inbox.\n\nIf it landed in spam, mark it as \"Not spam\" so future alerts arrive normally.");
+                    flash($ok ? 'Saved. Test email sent to ' . $email . ' (check spam too).' : 'Saved, but the server could not send the test email. See the README for email setup.');
+                }
+            } else {
+                flash('Email notification settings saved.');
+            }
+            header('Location: settings.php');
+            exit;
+        }
     } elseif (($_POST['form'] ?? '') === 'password') {
         $st = db()->prepare('SELECT password_hash FROM users WHERE id = ?');
         $st->execute([$user['id']]);
@@ -77,6 +104,20 @@ admin_header('Settings', $user, 'settings');
         <label>Office address (Arabic)<input type="text" name="address_ar" value="<?= $val('address_ar') ?>" dir="rtl"></label>
       </div>
       <button class="btn btn-orange" type="submit">Save contact details</button>
+    </form>
+    <form class="card" method="post">
+      <?= csrf_field() ?><input type="hidden" name="form" value="notify">
+      <h2>Email notifications</h2>
+      <p class="muted">Get an email each time someone sends a request or asks for a call-back on the website.</p>
+      <div class="grid2">
+        <label>Send alerts to <span class="hint">The inbox you check most</span><input type="email" name="notify_email" value="<?= $val('notify_email') ?>" placeholder="you@example.com"></label>
+        <label>Send from (optional) <span class="hint">A mailbox on your domain, e.g. no-reply@yourdomain.com</span><input type="email" name="mail_from" value="<?= $val('mail_from') ?>"></label>
+      </div>
+      <div class="choice-group"><label><input type="checkbox" name="notify_on" value="1"<?= setting('notify_on', '1') === '1' ? ' checked' : '' ?>> Email me about new requests</label></div>
+      <div class="actions">
+        <button class="btn btn-orange" type="submit">Save</button>
+        <button class="btn" type="submit" name="test" value="1">Save and send test email</button>
+      </div>
     </form>
     <form class="card" method="post" autocomplete="off">
       <?= csrf_field() ?><input type="hidden" name="form" value="password">

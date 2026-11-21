@@ -96,6 +96,7 @@ function ed_migrate(PDO $pdo): void
     $defaults = [
         'phone1' => '+966544827315', 'phone2' => '+966596917524', 'whatsapp' => '966544827315',
         'hours_en' => '', 'hours_ar' => '', 'address_en' => '', 'address_ar' => '', 'maps_url' => '',
+        'notify_email' => '', 'notify_on' => '1', 'mail_from' => '',
     ];
     foreach (ED_SERVICES as $s) {
         $defaults['avail_' . $s] = in_array($s, ['carer', 'hosp'], true) ? 'ahead' : 'ok';
@@ -296,6 +297,94 @@ function flash(?string $msg = null): ?string
     $m = $_SESSION['flash'] ?? null;
     unset($_SESSION['flash']);
     return $m;
+}
+
+/* ---------------- Email ----------------
+ * Uses the server's built-in mail (cPanel provides it). For local testing,
+ * set the environment variable ED_MAIL_LOG=1 and emails are written to
+ * destiny-data/mail-log.txt instead of being sent.
+ */
+function ed_site_host(): string
+{
+    $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
+    $host = preg_replace('/:\d+$/', '', $host) ?? '';
+    return preg_match('/^[a-z0-9.-]{1,190}$/', $host) ? $host : 'localhost';
+}
+
+function ed_valid_email(string $email): bool
+{
+    return (bool)filter_var($email, FILTER_VALIDATE_EMAIL) && !preg_match('/[\r\n]/', $email);
+}
+
+function ed_mail(string $to, string $subject, string $body): bool
+{
+    if (!ed_valid_email($to)) {
+        return false;
+    }
+    // Nothing a visitor typed ever goes into the email headers.
+    $subject = trim(preg_replace('/[\r\n\t]+/', ' ', $subject) ?? '');
+    $host = ed_site_host();
+    $from = setting('mail_from');
+    if (!ed_valid_email($from)) {
+        $from = 'no-reply@' . preg_replace('/^www\./', '', $host);
+    }
+    $headers = [
+        'From: Edinam Destiny website <' . $from . '>',
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: 8bit',
+        'X-Mailer: Edinam Destiny admin',
+    ];
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $body = str_replace(["\r\n", "\r"], "\n", $body);
+
+    if (getenv('ED_MAIL_LOG')) {
+        $entry = "==== " . gmdate('c') . "\nTo: $to\nSubject: $subject\n" . implode("\n", $headers) . "\n\n$body\n\n";
+        return (bool)@file_put_contents(ed_data_dir() . '/mail-log.txt', $entry, FILE_APPEND);
+    }
+    return @mail($to, $encodedSubject, str_replace("\n", "\r\n", $body), implode("\r\n", $headers), '-f' . $from);
+}
+
+/** Emails the owner about a new request (if notifications are switched on). Never throws. */
+function notify_new_request(int $id, array $row): void
+{
+    try {
+        $to = setting('notify_email');
+        if (setting('notify_on', '1') !== '1' || !ed_valid_email($to)) {
+            return;
+        }
+        $scheme = ed_is_https() ? 'https' : 'http';
+        $link = $scheme . '://' . (string)($_SERVER['HTTP_HOST'] ?? ed_site_host()) . '/admin/request.php?id=' . $id;
+        if (!preg_match('#^https?://[A-Za-z0-9.:-]+/admin/request\.php\?id=\d+$#', $link)) {
+            $link = '/admin/request.php?id=' . $id;
+        }
+        $what = $row['services'] !== '' ? $row['services'] : ($row['kind'] === 'callback' ? 'Call-back' : 'Request');
+        $subject = 'New website request #' . $id . ': ' . (function_exists('mb_substr') ? mb_substr($what, 0, 80) : $what);
+        $lines = [
+            'You have a new request on the Edinam Destiny website.',
+            '',
+            'Form:       ' . ($row['kind'] === 'build' ? 'Build your request' : 'Call-back request'),
+        ];
+        $labels = ['name' => 'Name', 'phone' => 'Phone', 'services' => 'Services', 'home' => 'Home', 'extras' => 'Also',
+                   'care' => 'Care for', 'schedule' => 'Schedule', 'area' => 'Area', 'start_date' => 'Start date', 'notes' => 'Notes'];
+        foreach ($labels as $k => $label) {
+            if (($row[$k] ?? '') !== '') {
+                $v = $k === 'notes'
+                    ? str_replace("\n", "\n            ", (string)$row[$k])
+                    : trim(preg_replace('/\s+/u', ' ', (string)$row[$k]) ?? '');
+                $lines[] = str_pad($label . ':', 12) . $v;
+            }
+        }
+        $lines[] = 'Language:   ' . ($row['lang'] === 'ar' ? 'Arabic' : 'English');
+        $lines[] = '';
+        $lines[] = 'Open it in the admin: ' . $link;
+        $lines[] = '';
+        $lines[] = 'The visitor was also sent to WhatsApp with this request, so check your WhatsApp too.';
+        $lines[] = 'To stop these emails, untick "Email me about new requests" in Admin > Settings.';
+        ed_mail($to, $subject, implode("\n", $lines));
+    } catch (Throwable $e) {
+        // A failed email must never stop the request from being saved.
+    }
 }
 
 /* ---------------- Simple text formatting for blog bodies ----------------

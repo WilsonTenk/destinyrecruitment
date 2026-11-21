@@ -93,7 +93,15 @@ A small PHP admin at `/admin/` (for example `https://www.yourdomain.com/admin/`)
 | **Requests** | See every *Build your request* and call-back form, mark each one New → Contacted → Quoted → Booked → Closed, add private notes, reply on WhatsApp in one click, delete old requests. WhatsApp still opens for the visitor as before. |
 | **Blog** | Write, edit, publish, unpublish and delete articles in English and Arabic, with a photo upload. Pages keep their `blog-….html` addresses and are built on the server, so Google can read them. |
 | **Availability** | Switch each service between *Available now*, *Book ahead* and *Fully booked*. The Home and Services pages update straight away. |
-| **Settings** | Phone numbers, WhatsApp number, working hours, office address and Google Maps link (shown across the site), and change password. |
+| **Settings** | Phone numbers, WhatsApp number, working hours, office address and Google Maps link (shown across the site), email alerts for new requests, and change password. |
+
+**Email alerts for new requests**
+
+1. In **Admin → Settings → Email notifications**, type the inbox that should get alerts and click **Save and send test email**.
+2. For reliable delivery (not spam): in cPanel → **Email Accounts**, create a mailbox such as `no-reply@yourdomain.com` and enter it under *Send from*. Then open cPanel → **Email Deliverability** and click **Repair** / install the suggested SPF and DKIM records.
+3. If the test email lands in spam, mark it *Not spam* once. Untick *Email me about new requests* to stop alerts.
+
+The email address is stored in the database on the server, not in the code, so it never appears in the GitHub repository. A failed email never stops a request from being saved; the request is always in the **Requests** inbox.
 
 **First-time setup (once, after the first deploy)**
 
@@ -111,7 +119,7 @@ A small PHP admin at `/admin/` (for example `https://www.yourdomain.com/admin/`)
 
 **Text formatting in articles:** leave an empty line between paragraphs, start a line with `## ` for a heading or `- ` for a bullet, and use `**bold**` and `[link text](https://...)`.
 
-**Testing locally** (developers): `php -S localhost:8080 -t site tools/dev-router.php` from the project folder runs the site and admin with the same rules as cPanel.
+**Testing locally** (developers): `php -S localhost:8080 -t site tools/dev-router.php` from the project folder runs the site and admin with the same rules as cPanel. Locally, emails are written to `destiny-data/mail-log.txt` instead of being sent.
 
 ## Pricing and requests
 
