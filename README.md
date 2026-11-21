@@ -52,6 +52,35 @@ The live site updates a minute or two later.
 
 Other hosts work too. Upload the contents of this `site` folder to Netlify, Vercel, Cloudflare Pages, GitHub Pages or a normal web host, then point the client's domain at it.
 
+## Launching on your own domain (cPanel)
+
+Everything is ready for cPanel hosting:
+
+- `.cpanel.yml` (project folder) tells cPanel's **Git Version Control** to copy this `site` folder into `public_html` on every deploy.
+- `site/.htaccess` forces HTTPS and adds security headers, caching and compression on the cPanel (Apache) server. GitHub Pages ignores it.
+- `tools/set-domain.py` switches every address in the site from the GitHub Pages address to your domain.
+
+**Steps**
+
+1. **Buy the domain** and point it at your cPanel hosting (your host gives you the nameservers).
+2. **Turn on HTTPS:** in cPanel, open **SSL/TLS Status** and run **AutoSSL** for the domain (and `www`).
+3. **Switch the site's addresses** on your computer, from the project folder:
+   ```
+   python tools/set-domain.py https://www.yourdomain.com --dry-run
+   python tools/set-domain.py https://www.yourdomain.com
+   ```
+   Then commit and push to GitHub as usual (`git push origin main`).
+4. **Connect cPanel to GitHub:** cPanel → **Git Version Control** → **Create**.
+   - Clone URL: `https://github.com/WilsonTenk/destinyrecruitment.git`
+   - Repository path: for example `/home/YOUR-CPANEL-USER/repositories/destinyrecruitment` (not inside `public_html`).
+5. **Deploy:** open the repository in Git Version Control → **Pull or Deploy** → **Update from Remote**, then **Deploy HEAD Commit**. The site appears at your domain.
+6. **Check it:** open the domain, try the language switch, the request form and a blog article, and visit a made-up address to see the 404 page.
+7. **Lock in HTTPS:** once `https://` works on the domain (and `www` if you use it), uncomment the `Strict-Transport-Security` line in `site/.htaccess`, push and deploy again. Optionally pick www or non-www in the same file.
+8. **Tell Google:** add the domain in Google Search Console and submit `https://www.yourdomain.com/sitemap.xml`.
+9. **Retire the GitHub Pages copy:** after the domain is live, turn off GitHub Pages (repo **Settings → Pages**) so there aren't two copies of the site.
+
+**Future updates:** edit, commit and `git push origin main`, then in cPanel **Update from Remote** and **Deploy HEAD Commit**.
+
 ## Pricing and requests
 
 No fixed prices are shown. Instead:
