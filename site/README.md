@@ -64,3 +64,9 @@ No fixed prices are shown. Instead:
 ## Not built yet
 
 The **admin panel** in the designs (availability, prices, services, guarantee text, contact details) needs a back end and a login. Until then, availability labels and prices are edited in the HTML files.
+
+## Icons
+
+All icons are from [Lucide](https://lucide.dev) (v0.460.0), free to use with no account. They're pasted into the pages as inline SVG, so there's nothing extra to load. To change one, copy its SVG from lucide.dev and replace the drawing inside the `<svg>` tag.
+
+Lucide licence (ISC): Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022. Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
