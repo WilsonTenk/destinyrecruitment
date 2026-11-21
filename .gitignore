@@ -8,3 +8,9 @@ client-brief/
 Thumbs.db
 .DS_Store
 generated-images/raw/
+
+# Admin data and uploads live only on the server
+site/data/
+destiny-data/
+site/uploads/*
+!site/uploads/.htaccess

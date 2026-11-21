@@ -75,11 +75,43 @@ Everything is ready for cPanel hosting:
    - Repository path: for example `/home/YOUR-CPANEL-USER/repositories/destinyrecruitment` (not inside `public_html`).
 5. **Deploy:** open the repository in Git Version Control → **Pull or Deploy** → **Update from Remote**, then **Deploy HEAD Commit**. The site appears at your domain.
 6. **Check it:** open the domain, try the language switch, the request form and a blog article, and visit a made-up address to see the 404 page.
+   Then set up the admin: see **Admin area → First-time setup** below.
 7. **Lock in HTTPS:** once `https://` works on the domain (and `www` if you use it), uncomment the `Strict-Transport-Security` line in `site/.htaccess`, push and deploy again. Optionally pick www or non-www in the same file.
 8. **Tell Google:** add the domain in Google Search Console and submit `https://www.yourdomain.com/sitemap.xml`.
 9. **Retire the GitHub Pages copy:** after the domain is live, turn off GitHub Pages (repo **Settings → Pages**) so there aren't two copies of the site.
 
 **Future updates:** edit, commit and `git push origin main`, then in cPanel **Update from Remote** and **Deploy HEAD Commit**.
+
+## Admin area (cPanel only)
+
+A small PHP admin at `/admin/` (for example `https://www.yourdomain.com/admin/`). It needs **PHP 7.4 or newer** with the usual extensions (PDO SQLite, GD, fileinfo, mbstring). Almost every cPanel host has these; check under **Select PHP Version** if something is missing. There is no MySQL database to create.
+
+**What it does**
+
+| Section | What the client can do |
+|---|---|
+| **Requests** | See every *Build your request* and call-back form, mark each one New → Contacted → Quoted → Booked → Closed, add private notes, reply on WhatsApp in one click, delete old requests. WhatsApp still opens for the visitor as before. |
+| **Blog** | Write, edit, publish, unpublish and delete articles in English and Arabic, with a photo upload. Pages keep their `blog-….html` addresses and are built on the server, so Google can read them. |
+| **Availability** | Switch each service between *Available now*, *Book ahead* and *Fully booked*. The Home and Services pages update straight away. |
+| **Settings** | Phone numbers, WhatsApp number, working hours, office address and Google Maps link (shown across the site), and change password. |
+
+**First-time setup (once, after the first deploy)**
+
+1. Open `https://www.yourdomain.com/admin/`. It shows the setup page.
+2. In cPanel → **File Manager**, open the folder **`destiny-data`** (next to `public_html`, in your home folder) and open **`setup-key.txt`**. Copy the key.
+3. Paste the key, choose a username and a strong password (10+ characters), and create the account. The key file deletes itself.
+
+**Where things are stored**
+
+- Database: `destiny-data/destiny.sqlite`, **outside** the public website folder so nobody can download it. (If the host doesn't allow that folder, it falls back to `public_html/data`, which is locked with its own deny rule.)
+- Uploaded photos: `public_html/uploads/`, re-saved as WebP and blocked from running scripts.
+- **Backups:** include `destiny-data` and `public_html/uploads` in your cPanel backups. Deploying from Git never touches them.
+
+**Security built in:** hashed passwords, lock-out after 5 wrong logins (15 minutes), protection against forged form submissions (CSRF tokens), secure session cookies, strict security headers, uploads checked and re-encoded, a spam trap and rate limit on the public forms, and visitor addresses stored only as a scrambled code. The site has a [privacy notice](privacy.html) because requests are now stored (Saudi PDPL).
+
+**Text formatting in articles:** leave an empty line between paragraphs, start a line with `## ` for a heading or `- ` for a bullet, and use `**bold**` and `[link text](https://...)`.
+
+**Testing locally** (developers): `php -S localhost:8080 -t site tools/dev-router.php` from the project folder runs the site and admin with the same rules as cPanel.
 
 ## Pricing and requests
 
@@ -90,9 +122,9 @@ No fixed prices are shown. Instead:
 - **Build your request** (`services.html#request`) lets visitors pick one or more services and describe their home, then sends it all as one WhatsApp message.
 - The Contact page's call-back form also accepts several services.
 
-## Not built yet
+## Notes
 
-The **admin panel** in the designs (availability, prices, services, guarantee text, contact details) needs a back end and a login. Until then, availability labels and prices are edited in the HTML files.
+On GitHub Pages (no PHP) the site still works exactly as before: forms open WhatsApp, labels and contact details use the built-in text, and the blog uses the static pages. The admin only runs on the cPanel host.
 
 ## Icons
 

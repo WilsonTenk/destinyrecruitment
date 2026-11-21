@@ -29,7 +29,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Instrument+Serif:ital@1&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=9">
+  <link rel="stylesheet" href="assets/css/styles.css?v=10">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
 </head>
@@ -68,24 +68,25 @@
           <span class="icon-tile"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" /></svg></span>
           <h2>WhatsApp</h2>
           <span class="muted" data-i18n="contactp.wa">We reply right away</span>
-          <span class="big" dir="ltr">+966 54 482 7315</span>
+          <span class="big" dir="ltr" data-setting="whatsapp">+966 54 482 7315</span>
         </a>
         <a class="contact-card" href="tel:+966544827315">
           <span class="icon-tile t-orange"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg></span>
           <h2 data-i18n="contactp.call">Call us</h2>
-          <span class="muted" data-i18n="contactp.hours">[Working hours]</span>
-          <span class="big" dir="ltr">+966 54 482 7315<br>+966 59 691 7524</span>
+          <span class="muted" data-setting="hours" data-i18n="contactp.hours">[Working hours]</span>
+          <span class="big" dir="ltr"><span data-setting="phone1">+966 54 482 7315</span><br><span data-setting="phone2">+966 59 691 7524</span></span>
         </a>
         <div class="contact-card">
           <span class="icon-tile t-yellow"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" /><circle cx="12" cy="10" r="3" /></svg></span>
           <h2 data-i18n="contactp.office">Our office</h2>
-          <span class="muted" data-i18n="contactp.address">[Office address, Riyadh]</span>
-          <a class="link-arrow orange" href="#map"><span data-i18n="contactp.maps">Open in Google Maps</span><span class="arrow" aria-hidden="true"></span></a>
+          <span class="muted" data-setting="address" data-i18n="contactp.address">[Office address, Riyadh]</span>
+          <a class="link-arrow orange" href="#map" data-setting="maps"><span data-i18n="contactp.maps">Open in Google Maps</span><span class="arrow" aria-hidden="true"></span></a>
         </div>
       </div>
 
       <div class="form-wrap section">
         <form class="form" id="callback-form" novalidate>
+          <div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
           <span class="eyebrow" data-i18n="contactp.form.eyebrow">Call-back request</span>
           <h2 data-i18n="contactp.form.title">Leave your number, <span class="serif">we’ll call you</span></h2>
           <div class="fields-2">
@@ -104,12 +105,13 @@
           </fieldset>
           <label class="field"><span data-i18n="form.message">Message (optional)</span><textarea name="message" rows="4"></textarea></label>
           <div><button type="submit" class="btn btn-orange"><span data-i18n="form.send">Send on WhatsApp</span><span class="arrow" aria-hidden="true"></span></button></div>
+          <p class="form-note" data-i18n="form.privacy">We keep a copy of your request so our team can follow up. See our <a href="privacy.html">privacy notice</a>.</p>
           <p class="form-note" data-i18n="form.note">Your request opens in WhatsApp, ready to send to our team.</p>
         </form>
         <div class="map" id="map">
           <!-- TODO: paste the Google Maps embed <iframe> for the office here once the client gives the address. -->
           <span data-i18n="contactp.map">[Google map of the office]</span>
-          <div class="map-label"><strong data-i18n="brand">Destiny Recruitment</strong><small data-i18n="contactp.address">[Office address, Riyadh]</small></div>
+          <div class="map-label"><strong data-i18n="brand">Destiny Recruitment</strong><small data-setting="address" data-i18n="contactp.address">[Office address, Riyadh]</small></div>
         </div>
       </div>
     </div>
@@ -132,8 +134,8 @@
         </div>
         <div class="footer-col">
           <h3 data-i18n="footer.contact">Contact</h3>
-          <a href="tel:+966544827315" dir="ltr">+966 54 482 7315</a>
-          <a href="tel:+966596917524" dir="ltr">+966 59 691 7524</a>
+          <a href="tel:+966544827315" dir="ltr" data-setting="phone1">+966 54 482 7315</a>
+          <a href="tel:+966596917524" dir="ltr" data-setting="phone2">+966 59 691 7524</a>
           <span data-i18n="footer.city">Riyadh, Saudi Arabia</span>
         </div>
         <div class="footer-col">
@@ -141,7 +143,7 @@
           <span data-i18n="footer.payList">Cash · Bank transfer · STC Pay</span>
         </div>
       </div>
-      <div class="footer-bottom">© <span id="year">2026</span> <span data-i18n="brand">Destiny Recruitment</span></div>
+      <div class="footer-bottom">© <span id="year">2026</span> <span data-i18n="brand">Destiny Recruitment</span> · <a href="privacy.html" data-i18n="footer.privacy">Privacy</a></div>
       <div class="footer-word" aria-hidden="true">Destiny</div>
     </div>
   </footer>
@@ -165,7 +167,7 @@
     </div>
   </div>
 
-  <script src="assets/js/i18n-ar.js?v=13"></script>
-  <script src="assets/js/main.js?v=4"></script>
+  <script src="assets/js/i18n-ar.js?v=14"></script>
+  <script src="assets/js/main.js?v=6"></script>
 </body>
 </html>
