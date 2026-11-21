@@ -91,9 +91,10 @@ A small PHP admin at `/admin/` (for example `https://www.yourdomain.com/admin/`)
 | Section | What the client can do |
 |---|---|
 | **Requests** | See every *Build your request* and call-back form, mark each one New → Contacted → Quoted → Booked → Closed, add private notes, reply on WhatsApp in one click, delete old requests. WhatsApp still opens for the visitor as before. |
+| **WhatsApp** | How many people tapped a WhatsApp button or sent a form to WhatsApp: today, yesterday, this week, last 7 days, this month, last month, last 30 days or any dates you pick, shown by day, week or month. Shows totals, different visitors, which buttons and pages they used, which services they asked for, and links to the request (name and phone) when they used a form. Download as Excel/CSV. It counts that WhatsApp was opened; it can't see whether the visitor pressed Send. |
 | **Blog** | Write, edit, publish, unpublish and delete articles in English and Arabic, with a photo upload. Pages keep their `blog-….html` addresses and are built on the server, so Google can read them. |
 | **Availability** | Switch each service between *Available now*, *Book ahead* and *Fully booked*. The Home and Services pages update straight away. |
-| **Settings** | Phone numbers, WhatsApp number, working hours, office address and Google Maps link (shown across the site), email alerts for new requests, and change password. |
+| **Settings** | Phone numbers, WhatsApp number, working hours, office address and Google Maps link (shown across the site), email alerts for new requests, two-step login, change password, and a list of recent logins. |
 
 **Email alerts for new requests**
 
@@ -107,7 +108,8 @@ The email address is stored in the database on the server, not in the code, so i
 
 1. Open `https://www.yourdomain.com/admin/`. It shows the setup page.
 2. In cPanel → **File Manager**, open the folder **`destiny-data`** (next to `public_html`, in your home folder) and open **`setup-key.txt`**. Copy the key.
-3. Paste the key, choose a username and a strong password (10+ characters), and create the account. The key file deletes itself.
+3. Paste the key, choose a username and a strong password (12+ characters, e.g. three or four random words), and create the account. The key file deletes itself.
+4. On the Settings page that opens: add your email under **Email notifications**, then click **Set up two-step login** and follow the steps.
 
 **Where things are stored**
 
@@ -115,7 +117,27 @@ The email address is stored in the database on the server, not in the code, so i
 - Uploaded photos: `public_html/uploads/`, re-saved as WebP and blocked from running scripts.
 - **Backups:** include `destiny-data` and `public_html/uploads` in your cPanel backups. Deploying from Git never touches them.
 
-**Security built in:** hashed passwords, lock-out after 5 wrong logins (15 minutes), protection against forged form submissions (CSRF tokens), secure session cookies, strict security headers, uploads checked and re-encoded, a spam trap and rate limit on the public forms, and visitor addresses stored only as a scrambled code. The site has a [privacy notice](privacy.html) because requests are now stored (Saudi PDPL).
+**Security built in**
+
+- **Two-step login** (Settings → Two-step login): after your password, the admin asks for a 6-digit code from Google Authenticator or Microsoft Authenticator on your phone. A stolen or guessed password alone can't get in. You get 8 one-time **recovery codes**; keep them on paper.
+- **Lost your phone and the recovery codes?** In cPanel → File Manager, create an empty file named `disable-two-step.txt` inside `destiny-data`. The next correct password login switches two-step off (and emails you), then turn it on again with the new phone. Only someone with your cPanel login can do this.
+- **Brute-force protection:** 5 wrong tries from one internet address locks that address for 15 minutes; 30 wrong tries from anywhere in 15 minutes pauses all logins for 15 minutes and emails you. Two-step codes work only once.
+- **Alerts by email** (to the Email notifications address): every new login (time, device, address), password changes, two-step changes, and many wrong passwords.
+- **Recent logins** list in Settings, plus **Sign out all other devices**. Changing the password also signs out every other device.
+- Strong passwords required (12+ characters, no common words, not containing the username).
+- Sessions end after 2 hours of no activity and always after 12 hours; the login cookie is secure, HTTP-only, same-site strict and only sent to `/admin/`. Session files are kept in the private `destiny-data` folder.
+- Forged form protection (CSRF tokens) on every admin form; strict security headers; the admin is hidden from Google.
+- Public site: only the two form endpoints accept posts, strict Content-Security-Policy, uploads re-encoded and blocked from running scripts, hidden/backup/log/database files blocked, common hacking probes (WordPress, phpMyAdmin, .env) get "not found", PHP errors never shown to visitors (logged to `destiny-data/php-errors.log`), links in alert emails can't be faked with a forged web address, spam trap and rate limits on the forms and the WhatsApp counter.
+- Visitor addresses are stored only as a scrambled code. The site has a [privacy notice](privacy.html) because requests are stored (Saudi PDPL).
+
+**Keep the accounts around the website safe too.** Most website break-ins come through the hosting or email account, not the website code:
+
+1. **cPanel:** use a long unique password and turn on cPanel **Two-Factor Authentication** (cPanel → Security → Two-Factor Authentication).
+2. **GitHub:** turn on two-factor authentication (github.com → Settings → Password and authentication). The deploy comes from this repository.
+3. **The email inbox** that receives alerts: strong password and two-step verification, because it is where alerts arrive.
+4. After the domain has HTTPS working, uncomment the **HSTS** line in `.htaccess`.
+5. Optional extra lock: cPanel → **Directory Privacy** → `public_html/admin` adds a second username and password before the admin login page even appears.
+6. Keep PHP on a supported version (cPanel → Select PHP Version, 8.1 or newer) and keep cPanel backups switched on.
 
 **Text formatting in articles:** leave an empty line between paragraphs, start a line with `## ` for a heading or `- ` for a bullet, and use `**bold**` and `[link text](https://...)`.
 

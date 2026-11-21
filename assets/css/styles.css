@@ -518,7 +518,8 @@ html:not([lang="ar"]) .only-ar { display: none !important; }
 /* ---------- Admin-driven bits ---------- */
 .status.off { color: #4a504f; }
 .status.off::before { background: #8a8f8e; }
-.hp { position: absolute !important; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+/* Spam trap: hidden in place (never pushed off-screen, which made Arabic pages slide sideways) */
+.hp { position: absolute !important; inset-inline-start: 0; top: 0; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; opacity: 0; pointer-events: none; }
 .form-note a { color: var(--orange-text); font-weight: 600; }
 .footer-bottom a { color: #8fb0a3; }
 .footer-bottom a:hover { color: #fff; }

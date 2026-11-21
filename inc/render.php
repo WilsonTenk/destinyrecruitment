@@ -10,7 +10,7 @@ require_once __DIR__ . '/bootstrap.php';
 function site_base_url(): string
 {
     $scheme = ed_is_https() ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $host = ed_request_host();   // checked, so a forged Host header can't inject markup
     $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
     return $scheme . '://' . $host . $dir . '/';
 }

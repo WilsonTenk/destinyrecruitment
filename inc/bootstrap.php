@@ -10,6 +10,12 @@ if (!defined('ED_BOOT')) {
     define('ED_BOOT', true);
 }
 
+// Never show PHP error details (file paths, queries) to visitors. Errors go to
+// destiny-data/php-errors.log instead.
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+ini_set('expose_php', '0');
+
 define('ED_SITE_DIR', dirname(__DIR__));                 // .../public_html
 define('ED_UPLOAD_DIR', ED_SITE_DIR . '/uploads');
 define('ED_UPLOAD_URL', 'uploads');
@@ -43,6 +49,7 @@ function ed_data_dir(): string
     if ($dir === $inside && !file_exists($inside . '/.htaccess')) {
         @file_put_contents($inside . '/.htaccess', "Require all denied\n");
     }
+    ini_set('error_log', $dir . '/php-errors.log');
     return $dir;
 }
 
@@ -53,10 +60,12 @@ function db(): PDO
     if ($pdo) {
         return $pdo;
     }
-    $pdo = new PDO('sqlite:' . ed_data_dir() . '/destiny.sqlite', null, null, [
+    $file = ed_data_dir() . '/destiny.sqlite';
+    $pdo = new PDO('sqlite:' . $file, null, null, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+    @chmod($file, 0640);
     $pdo->exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
     ed_migrate($pdo);
     return $pdo;
@@ -92,11 +101,31 @@ function ed_migrate(PDO $pdo): void
         CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
         CREATE INDEX IF NOT EXISTS idx_requests_status ON requests(status, created_at);
         CREATE INDEX IF NOT EXISTS idx_attempts ON login_attempts(ip_hash, attempted_at);
+        CREATE TABLE IF NOT EXISTS wa_clicks (
+            id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, source TEXT NOT NULL, page TEXT NOT NULL DEFAULT '',
+            services TEXT NOT NULL DEFAULT '', lang TEXT NOT NULL DEFAULT 'en', request_id INTEGER, ip_hash TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_wa_time ON wa_clicks(created_at);
+        CREATE TABLE IF NOT EXISTS auth_log (
+            id INTEGER PRIMARY KEY, at TEXT NOT NULL, event TEXT NOT NULL, username TEXT, ip TEXT, agent TEXT
+        );
     ");
+    // Columns added after the first release (two-step login, sign-out everywhere).
+    $have = array_column($pdo->query('PRAGMA table_info(users)')->fetchAll(PDO::FETCH_ASSOC), 'name');
+    $add = [
+        'totp_secret' => "TEXT NOT NULL DEFAULT ''", 'totp_on' => 'INTEGER NOT NULL DEFAULT 0',
+        'totp_last' => 'INTEGER NOT NULL DEFAULT 0', 'recovery' => "TEXT NOT NULL DEFAULT ''",
+        'session_ver' => 'INTEGER NOT NULL DEFAULT 1',
+    ];
+    foreach ($add as $col => $def) {
+        if (!in_array($col, $have, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN $col $def");
+        }
+    }
     $defaults = [
         'phone1' => '+966544827315', 'phone2' => '+966596917524', 'whatsapp' => '966544827315',
         'hours_en' => '', 'hours_ar' => '', 'address_en' => '', 'address_ar' => '', 'maps_url' => '',
-        'notify_email' => '', 'notify_on' => '1', 'mail_from' => '',
+        'notify_email' => '', 'notify_on' => '1', 'mail_from' => '', 'site_host' => '', 'lock_alert_at' => '0',
     ];
     foreach (ED_SERVICES as $s) {
         $defaults['avail_' . $s] = in_array($s, ['carer', 'hosp'], true) ? 'ahead' : 'ok';
@@ -199,18 +228,34 @@ function ed_session_start(): void
     if (session_status() === PHP_SESSION_ACTIVE) {
         return;
     }
+    // Keep session files in the private data folder (not the shared server temp folder).
+    $sessDir = ed_data_dir() . '/sessions';
+    if (is_dir($sessDir) || @mkdir($sessDir, 0700, true)) {
+        session_save_path($sessDir);
+        ini_set('session.gc_probability', '1');
+        ini_set('session.gc_divisor', '50');
+        ini_set('session.gc_maxlifetime', (string)(12 * 3600));
+    }
+    // The admin cookie is only sent to the admin folder, never to public pages.
+    $path = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/') . '/';
     session_name('ed_admin');
     session_set_cookie_params([
-        'lifetime' => 0, 'path' => '/', 'secure' => ed_is_https(), 'httponly' => true, 'samesite' => 'Strict',
+        'lifetime' => 0, 'path' => $path, 'secure' => ed_is_https(), 'httponly' => true, 'samesite' => 'Strict',
     ]);
     ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.use_trans_sid', '0');
     session_start();
-    $idle = 2 * 3600;
-    if (isset($_SESSION['last_seen']) && time() - $_SESSION['last_seen'] > $idle) {
+    $now = time();
+    $idle = 2 * 3600;            // signed out after 2 hours of no activity
+    $absolute = 12 * 3600;       // and always after 12 hours
+    if ((isset($_SESSION['last_seen']) && $now - $_SESSION['last_seen'] > $idle)
+        || (isset($_SESSION['started']) && $now - $_SESSION['started'] > $absolute)) {
         $_SESSION = [];
         session_regenerate_id(true);
     }
-    $_SESSION['last_seen'] = time();
+    $_SESSION['started'] = $_SESSION['started'] ?? $now;
+    $_SESSION['last_seen'] = $now;
 }
 
 function csrf_token(): string
@@ -243,9 +288,50 @@ function current_user(): ?array
     if (empty($_SESSION['uid'])) {
         return null;
     }
-    $st = db()->prepare('SELECT id, username FROM users WHERE id = ?');
+    $st = db()->prepare('SELECT id, username, session_ver, totp_on, recovery FROM users WHERE id = ?');
     $st->execute([$_SESSION['uid']]);
-    return $st->fetch() ?: null;
+    $u = $st->fetch();
+    // "Sign out everywhere", a password change or a two-step change ends all other sessions.
+    if (!$u || (int)$u['session_ver'] !== (int)($_SESSION['ver'] ?? 0)) {
+        $_SESSION = [];
+        return null;
+    }
+    return $u;
+}
+
+/** Signs the user in on this browser (after password and, if on, the two-step code). */
+function ed_finish_login(array $u, string $method = 'password'): void
+{
+    ed_session_start();
+    clear_attempts();
+    session_regenerate_id(true);
+    $keepFlash = $_SESSION['flash'] ?? null;
+    // Start clean: a new session ID and a new form token after logging in.
+    $_SESSION = ['uid' => (int)$u['id'], 'ver' => (int)$u['session_ver'], 'started' => time(), 'last_seen' => time()];
+    if ($keepFlash !== null) {
+        $_SESSION['flash'] = $keepFlash;
+    }
+    db()->prepare('UPDATE users SET last_login = ? WHERE id = ?')->execute([ed_now(), $u['id']]);
+    // Remember the site's real address for links in emails (the address the owner logs in on).
+    save_setting('site_host', ed_request_host());
+    auth_log('login' . ($method === 'password' ? '' : ' (' . $method . ')'), (string)$u['username']);
+    ed_security_email('New login to your website admin',
+        "Someone just logged in to the Edinam Destiny admin as \"" . $u['username'] . "\".\n\n"
+        . 'Time:    ' . ed_riyadh_time() . "\n"
+        . 'Device:  ' . ed_agent_summary() . "\n"
+        . 'Address: ' . ed_client_ip() . "\n\n"
+        . "If this was you, you can ignore this email.\n"
+        . "If it was NOT you: log in, change your password and click \"Sign out all other devices\" in Admin > Settings,\n"
+        . "then turn on two-step login.");
+}
+
+function bump_session_version(int $uid): void
+{
+    db()->prepare('UPDATE users SET session_ver = session_ver + 1 WHERE id = ?')->execute([$uid]);
+    $st = db()->prepare('SELECT session_ver FROM users WHERE id = ?');
+    $st->execute([$uid]);
+    ed_session_start();
+    $_SESSION['ver'] = (int)$st->fetchColumn();   // keep THIS browser signed in
 }
 
 function require_login(): array
@@ -258,18 +344,229 @@ function require_login(): array
     return $u;
 }
 
+/**
+ * Brute-force protection:
+ *  - 5 wrong tries from one internet address  → that address waits 15 minutes;
+ *  - 30 wrong tries from anywhere in 15 minutes → all logins pause for 15 minutes
+ *    (stops attacks spread over many addresses) and the owner gets an email.
+ */
 function too_many_attempts(): bool
 {
     $since = time() - 15 * 60;
     db()->prepare('DELETE FROM login_attempts WHERE attempted_at < ?')->execute([time() - 86400]);
     $st = db()->prepare('SELECT COUNT(*) FROM login_attempts WHERE ip_hash = ? AND attempted_at > ?');
     $st->execute([ed_ip_hash(), $since]);
-    return (int)$st->fetchColumn() >= 5;
+    if ((int)$st->fetchColumn() >= 5) {
+        return true;
+    }
+    $st = db()->prepare('SELECT COUNT(*) FROM login_attempts WHERE attempted_at > ?');
+    $st->execute([$since]);
+    if ((int)$st->fetchColumn() >= 30) {
+        if (time() - (int)setting('lock_alert_at', '0') > 3600) {
+            save_setting('lock_alert_at', (string)time());
+            auth_log('logins paused (many wrong passwords)', '');
+            ed_security_email('Warning: many wrong logins on your website admin',
+                "More than 30 wrong passwords were tried on the Edinam Destiny admin in the last 15 minutes,\n"
+                . "so logins are paused for 15 minutes. Your account is safe.\n\n"
+                . "Nothing else is needed if two-step login is on. If it is not on yet, please turn it on in Admin > Settings.\n"
+                . "Time: " . ed_riyadh_time());
+        }
+        return true;
+    }
+    return false;
 }
 
-function record_failed_attempt(): void
+function record_failed_attempt(string $username = '', string $what = 'wrong password'): void
 {
     db()->prepare('INSERT INTO login_attempts(ip_hash, attempted_at) VALUES (?, ?)')->execute([ed_ip_hash(), time()]);
+    auth_log('failed: ' . $what, $username);
+}
+
+/* ---------------- Security log and alerts ---------------- */
+function ed_client_ip(): string
+{
+    $ip = (string)($_SERVER['REMOTE_ADDR'] ?? '');
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : 'unknown';
+}
+
+/** Short, safe description of the browser, e.g. "Chrome on Windows". */
+function ed_agent_summary(): string
+{
+    $ua = (string)($_SERVER['HTTP_USER_AGENT'] ?? '');
+    $browser = 'Unknown browser';
+    foreach (['Edg/' => 'Edge', 'OPR/' => 'Opera', 'SamsungBrowser' => 'Samsung Internet', 'Firefox/' => 'Firefox',
+              'CriOS' => 'Chrome', 'Chrome/' => 'Chrome', 'Safari/' => 'Safari', 'curl' => 'curl (script)'] as $needle => $name) {
+        if (stripos($ua, $needle) !== false) { $browser = $name; break; }
+    }
+    $os = '';
+    foreach (['iPhone' => 'iPhone', 'iPad' => 'iPad', 'Android' => 'Android', 'Windows' => 'Windows',
+              'Mac OS' => 'Mac', 'Linux' => 'Linux'] as $needle => $name) {
+        if (stripos($ua, $needle) !== false) { $os = $name; break; }
+    }
+    return $os !== '' ? "$browser on $os" : $browser;
+}
+
+function ed_riyadh_time(?string $utc = null): string
+{
+    try {
+        $d = new DateTime($utc ?? 'now', new DateTimeZone('UTC'));
+        $d->setTimezone(new DateTimeZone('Asia/Riyadh'));
+        return $d->format('j M Y, g:i a') . ' (Riyadh)';
+    } catch (Exception $e) {
+        return (string)$utc;
+    }
+}
+
+function auth_log(string $event, string $username): void
+{
+    try {
+        db()->prepare('INSERT INTO auth_log(at, event, username, ip, agent) VALUES (?, ?, ?, ?, ?)')
+            ->execute([ed_now(), mb_substr($event, 0, 80), mb_substr($username, 0, 40), ed_client_ip(), ed_agent_summary()]);
+        db()->exec("DELETE FROM auth_log WHERE at < datetime('now', '-90 days')");
+    } catch (Throwable $e) {
+        // logging must never break a login
+    }
+}
+
+/** Security emails go to the same address as request alerts (even if request alerts are switched off). */
+function ed_security_email(string $subject, string $body): void
+{
+    try {
+        $to = setting('notify_email');
+        if (ed_valid_email($to)) {
+            ed_mail($to, $subject, $body . "\n\n— Edinam Destiny website security");
+        }
+    } catch (Throwable $e) {
+    }
+}
+
+/** Returns a message if the password is too weak, or null if it is fine. */
+function password_problem(string $pass, string $username = ''): ?string
+{
+    if (strlen($pass) < 12) {
+        return 'The password must be at least 12 characters. Three or four random words joined together work well.';
+    }
+    $lower = strtolower($pass);
+    $core = preg_replace('/[^a-z]/', '', $lower) ?? '';
+    $common = ['password', 'passwort', 'qwerty', 'qwertyuiop', 'asdfgh', 'letmein', 'welcome', 'admin', 'administrator',
+               'iloveyou', 'abcdef', 'abcdefgh', 'monkey', 'dragon', 'football', 'sunshine', 'princess', 'login',
+               'destiny', 'edinam', 'recruitment', 'riyadh', 'saudi', 'nanny', 'housemaid', 'changeme'];
+    if (preg_match('/^(.)\1+$/', $pass) || preg_match('/^(0123456789|1234567890|123456789012|012345678901)/', $pass)) {
+        return 'That password is too easy to guess. Please choose another.';
+    }
+    if (in_array($core, $common, true) || ($username !== '' && stripos($pass, $username) !== false)) {
+        return 'That password is too easy to guess (it is a common word or contains your username). Please choose another.';
+    }
+    return null;
+}
+
+/* ---------------- Two-step login (authenticator app, RFC 6238) ---------------- */
+function b32_encode(string $bin): string
+{
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $bits = '';
+    foreach (str_split($bin) as $c) {
+        $bits .= str_pad(decbin(ord($c)), 8, '0', STR_PAD_LEFT);
+    }
+    $out = '';
+    foreach (str_split($bits, 5) as $chunk) {
+        $out .= $alphabet[bindec(str_pad($chunk, 5, '0'))];
+    }
+    return $out;
+}
+
+function b32_decode(string $s): string
+{
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $s = strtoupper(preg_replace('/[^A-Za-z2-7]/', '', $s) ?? '');
+    $bits = '';
+    foreach (str_split($s) as $c) {
+        $bits .= str_pad(decbin((int)strpos($alphabet, $c)), 5, '0', STR_PAD_LEFT);
+    }
+    $out = '';
+    foreach (str_split($bits, 8) as $byte) {
+        if (strlen($byte) === 8) {
+            $out .= chr(bindec($byte));
+        }
+    }
+    return $out;
+}
+
+function totp_new_secret(): string
+{
+    return b32_encode(random_bytes(20));
+}
+
+function totp_code(string $secret, int $step): string
+{
+    $hash = hash_hmac('sha1', pack('N2', 0, $step), b32_decode($secret), true);
+    $o = ord($hash[19]) & 0x0f;
+    $n = ((ord($hash[$o]) & 0x7f) << 24) | (ord($hash[$o + 1]) << 16) | (ord($hash[$o + 2]) << 8) | ord($hash[$o + 3]);
+    return str_pad((string)($n % 1000000), 6, '0', STR_PAD_LEFT);
+}
+
+/** Returns the matching time step (allowing ±30 s clock drift), or 0. Each code works only once. */
+function totp_match(string $secret, string $code, int $lastUsed = 0): int
+{
+    $code = preg_replace('/\D/', '', $code) ?? '';
+    if (strlen($code) !== 6 || $secret === '') {
+        return 0;
+    }
+    $now = intdiv(time(), 30);
+    foreach ([0, -1, 1] as $d) {
+        $step = $now + $d;
+        if ($step > $lastUsed && hash_equals(totp_code($secret, $step), $code)) {
+            return $step;
+        }
+    }
+    return 0;
+}
+
+/** Checks a code from the app for a saved user and marks it used. */
+function totp_check(array $u, string $code): bool
+{
+    $step = totp_match((string)$u['totp_secret'], $code, (int)$u['totp_last']);
+    if ($step === 0) {
+        return false;
+    }
+    db()->prepare('UPDATE users SET totp_last = ? WHERE id = ?')->execute([$step, $u['id']]);
+    return true;
+}
+
+/** Makes 8 one-time recovery codes. Returns [codes to show once, value to store]. */
+function recovery_new(): array
+{
+    $plain = [];
+    $hashes = [];
+    for ($i = 0; $i < 8; $i++) {
+        $c = strtoupper(bin2hex(random_bytes(3)) . '-' . bin2hex(random_bytes(3)));
+        $plain[] = $c;
+        $hashes[] = password_hash($c, PASSWORD_DEFAULT);
+    }
+    return [$plain, json_encode($hashes)];
+}
+
+function recovery_left(array $u): int
+{
+    return count(json_decode((string)($u['recovery'] ?? ''), true) ?: []);
+}
+
+/** Uses up one recovery code if it matches. */
+function recovery_use(array $u, string $code): bool
+{
+    $code = strtoupper(trim($code));
+    if (!preg_match('/^[0-9A-F]{6}-[0-9A-F]{6}$/', $code)) {
+        return false;
+    }
+    $hashes = json_decode((string)$u['recovery'], true) ?: [];
+    foreach ($hashes as $i => $hsh) {
+        if (password_verify($code, (string)$hsh)) {
+            unset($hashes[$i]);
+            db()->prepare('UPDATE users SET recovery = ? WHERE id = ?')->execute([json_encode(array_values($hashes)), $u['id']]);
+            return true;
+        }
+    }
+    return false;
 }
 
 function clear_attempts(): void
@@ -304,11 +601,27 @@ function flash(?string $msg = null): ?string
  * set the environment variable ED_MAIL_LOG=1 and emails are written to
  * destiny-data/mail-log.txt instead of being sent.
  */
-function ed_site_host(): string
+/** The address this request was made to, checked so a forged "Host" header can't inject anything. */
+function ed_request_host(): string
 {
     $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? 'localhost'));
-    $host = preg_replace('/:\d+$/', '', $host) ?? '';
-    return preg_match('/^[a-z0-9.-]{1,190}$/', $host) ? $host : 'localhost';
+    return preg_match('/^[a-z0-9.-]{1,190}(:\d{1,5})?$/', $host) ? $host : 'localhost';
+}
+
+function ed_site_host(): string
+{
+    return preg_replace('/:\d+$/', '', ed_request_host()) ?? 'localhost';
+}
+
+/** Trusted site address for links in emails: the one the owner logs in on (not what a visitor's request claims). */
+function ed_trusted_base(): string
+{
+    $host = setting('site_host');
+    if (!preg_match('/^[a-z0-9.-]{1,190}(:\d{1,5})?$/', $host)) {
+        return '';
+    }
+    $local = preg_match('/^(localhost|127\.0\.0\.1)(:\d+)?$/', $host);
+    return ($local ? 'http' : 'https') . '://' . $host;
 }
 
 function ed_valid_email(string $email): bool
@@ -353,11 +666,9 @@ function notify_new_request(int $id, array $row): void
         if (setting('notify_on', '1') !== '1' || !ed_valid_email($to)) {
             return;
         }
-        $scheme = ed_is_https() ? 'https' : 'http';
-        $link = $scheme . '://' . (string)($_SERVER['HTTP_HOST'] ?? ed_site_host()) . '/admin/request.php?id=' . $id;
-        if (!preg_match('#^https?://[A-Za-z0-9.:-]+/admin/request\.php\?id=\d+$#', $link)) {
-            $link = '/admin/request.php?id=' . $id;
-        }
+        // The link uses the saved site address, so a forged request can't point it to a fake site.
+        $base = ed_trusted_base();
+        $link = $base !== '' ? $base . '/admin/request.php?id=' . $id : 'Admin > Requests, request #' . $id;
         $what = $row['services'] !== '' ? $row['services'] : ($row['kind'] === 'callback' ? 'Call-back' : 'Request');
         $subject = 'New website request #' . $id . ': ' . (function_exists('mb_substr') ? mb_substr($what, 0, 80) : $what);
         $lines = [
