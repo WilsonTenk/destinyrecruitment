@@ -6,7 +6,7 @@ Tone: warm and family-focused. Arabic is the main version; English follows.
 > - "for years" / "منذ سنوات" – kept vague on purpose, no number given.
 > - 3-day free replacement guarantee and its conditions.
 > - That workers are interviewed, have their documents checked and get trained before starting.
-> - Same-day reply to bookings.
+> - Instant reply to bookings.
 > Still needed from the client: commercial registration / Musaned licence number, office address, working hours, real photos.
 
 ---
@@ -32,8 +32,8 @@ Tone: warm and family-focused. Arabic is the main version; English follows.
 - **كيف تطلبه:** رسالة واتساب واحدة
 
 ### أسئلة شائعة
-- **كم يستغرق الحجز؟** عادةً نرد على طلبك خلال أقل من ساعة، ونرتب موعد البدء حسب الخدمة والتوفر.
-- **كم التكلفة؟** لا توجد قائمة أسعار ثابتة. نتفق معك على السعر حسب منزلك واحتياجك، ونضمن لك أفضل عرض.
+- **كم يستغرق الحجز؟** نرد عليك فورًا، ونرتب موعد البدء حسب الخدمة والتوفر.
+- **كم التكلفة؟** لا توجد قائمة أسعار ثابتة. يعتمد السعر على منزلك (نوعه ومساحته والمساحات الخارجية)، والخدمات التي تجمعها، والجدول، ومن يحتاج إلى رعاية. أرسل لنا طلبك ونتفق معك على سعر واضح.
 - **ما طرق الدفع المتاحة؟** نقدًا، أو تحويل بنكي، أو STC Pay.
 - **هل يمكن الحجز بالساعة؟** نعم، نوفّر الحجز بالساعة وبالشهر وبعقود أطول حسب احتياجك.
 - **هل تخدمون الشركات والمدارس؟** نعم، نوفّر عاملات تنظيف وطاقم ضيافة للمدارس والشركات والمناسبات.
@@ -61,8 +61,8 @@ Your peace of mind comes first. If the worker isn't the right fit within the fir
 - **How to ask:** one WhatsApp message
 
 ### FAQ
-- **How long does booking take?** We usually reply within an hour and arrange a start date based on the service and availability.
-- **How much does it cost?** There’s no fixed price list. We agree the price with you, based on your home and your needs, and make sure you get the best deal.
+- **How long does booking take?** We reply right away and arrange a start date based on the service and availability.
+- **How much does it cost?** There’s no fixed price list. The price depends on your home (type, size and outdoor areas), the services you combine, the schedule and who needs care. Send us a request and we’ll agree one clear price with you.
 - **How can I pay?** Cash, bank transfer or STC Pay.
 - **Can I book by the hour?** Yes – hourly, monthly, or longer contracts, whatever you need.
 - **Do you serve companies and schools?** Yes – cleaners and hospitality staff for schools, offices and events.
