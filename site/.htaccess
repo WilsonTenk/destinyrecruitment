@@ -23,6 +23,10 @@ RedirectMatch 404 /\.git
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # One address for the site: www.edinamrecruitment.com goes to edinamrecruitment.com
+  RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+  RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
   # Blog pages come from the admin database but keep their .html addresses
   RewriteRule ^blog\.html$ blog.php [L,QSA]
   RewriteRule ^(blog-[a-z0-9-]+)\.html$ article.php?slug=$1 [L,QSA]
@@ -40,13 +44,6 @@ RedirectMatch 404 /\.git
   # Common hacking probes for other website systems (WordPress etc.) get a plain "not found"
   RewriteRule ^(wp-admin|wp-login\.php|wp-content|wp-includes|xmlrpc\.php|phpmyadmin|pma|\.env|vendor/|config\.php) - [R=404,L,NC]
 
-  # Optional: pick one address for the site. Uncomment ONE block.
-  # (a) Send www.example.com to example.com
-  # RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
-  # RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
-  # (b) Send example.com to www.example.com
-  # RewriteCond %{HTTP_HOST} !^www\. [NC]
-  # RewriteRule ^ https://www.%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
 # ---------- Security headers ----------
@@ -59,9 +56,8 @@ RedirectMatch 404 /\.git
   Header always set X-Permitted-Cross-Domain-Policies "none"
   # Same rules as the pages' own meta tag, plus frame-ancestors (only works as a header)
   Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; frame-src https://www.google.com https://maps.google.com; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
-  # HSTS: tells browsers to always use HTTPS. Uncomment ONLY after HTTPS works
-  # on the domain (and www, if used), because browsers remember it for a year.
-  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  # HSTS: browsers remember to always use HTTPS for this site (turned on once HTTPS was confirmed).
+  Header always set Strict-Transport-Security "max-age=31536000"
   Header unset X-Powered-By
 </IfModule>
 ServerSignature Off
