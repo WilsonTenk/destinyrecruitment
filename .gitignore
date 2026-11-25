@@ -14,3 +14,4 @@ site/data/
 destiny-data/
 site/uploads/*
 !site/uploads/.htaccess
+edinam-site-upload.zip

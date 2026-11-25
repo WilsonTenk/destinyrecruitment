@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://wilsontenk.github.io/destinyrecruitment/sitemap.xml
+Sitemap: https://edinamrecruitment.com/sitemap.xml
