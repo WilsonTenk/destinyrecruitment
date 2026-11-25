@@ -124,7 +124,7 @@
   function canBeacon() {
     return /^https?:$/.test(location.protocol) && !/github\.io$/.test(location.hostname) && !!navigator.sendBeacon;
   }
-  function pageName() { return (location.pathname.split('/').pop() || 'index.html').toLowerCase(); }
+  function pageName() { return (location.pathname.split('/').pop() || 'index').replace(/\.html$/i, '').toLowerCase(); }
   function saveRequest(payload) {
     try {
       if (!canBeacon()) return;

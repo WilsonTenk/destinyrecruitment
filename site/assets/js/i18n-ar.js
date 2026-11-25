@@ -279,7 +279,7 @@ window.DESTINY_AR = {
   'status.off': 'محجوزة بالكامل',
   'rq.name': 'اسمك',
   'rq.phone': 'رقم الجوال',
-  'form.privacy': 'نحتفظ بنسخة من طلبك ليتمكن فريقنا من متابعته. اطّلع على <a href="privacy.html">إشعار الخصوصية</a>.',
+  'form.privacy': 'نحتفظ بنسخة من طلبك ليتمكن فريقنا من متابعته. اطّلع على <a href="privacy">إشعار الخصوصية</a>.',
   'footer.privacy': 'الخصوصية',
   'title.privacy': 'إشعار الخصوصية – إدينام ديستني للاستقدام',
   'privacy.eyebrow': 'الخصوصية',

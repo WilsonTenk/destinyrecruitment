@@ -55,12 +55,13 @@ $sourceNames = [
     'contact-card' => 'WhatsApp card (Contact page)', 'page' => 'Button on the page',
 ];
 $pageName = function (string $p): string {
-    $map = ['' => 'Home', 'index.html' => 'Home', 'services.html' => 'Services', 'about.html' => 'About', 'contact.html' => 'Contact',
-            'blog.html' => 'Blog', 'privacy.html' => 'Privacy', '404.html' => 'Page not found'];
+    $p = preg_replace('/\.html$/', '', $p) ?? $p; // older records were saved as services.html, newer as services
+    $map = ['' => 'Home', 'index' => 'Home', 'services' => 'Services', 'about' => 'About', 'contact' => 'Contact',
+            'blog' => 'Blog', 'privacy' => 'Privacy', '404' => 'Page not found'];
     if (isset($map[$p])) {
         return $map[$p];
     }
-    if (preg_match('/^blog-(.+)\.html$/', $p, $m)) {
+    if (preg_match('/^blog-(.+)$/', $p, $m)) {
         return 'Article: ' . ucfirst(str_replace('-', ' ', $m[1]));
     }
     return $p;

@@ -23,11 +23,11 @@ admin_header('Blog', $user, 'posts');
         <tbody>
 <?php foreach ($posts as $p): ?>
           <tr>
-            <td><strong><?= h($p['title_en']) ?></strong><span class="hint"><?= h($p['slug']) ?>.html</span></td>
+            <td><strong><?= h($p['title_en']) ?></strong><span class="hint">/<?= h($p['slug']) ?></span></td>
             <td><span class="pill <?= $p['published'] ? 'published' : 'draft' ?>"><?= $p['published'] ? 'Published' : 'Draft' ?></span></td>
             <td><?= h($p['published_at'] ? substr($p['published_at'], 0, 10) : '—') ?></td>
             <td><?= h(substr($p['updated_at'], 0, 10)) ?></td>
-            <td><a href="post-edit.php?id=<?= (int)$p['id'] ?>">Edit</a><?php if ($p['published']): ?> · <a href="../<?= h($p['slug']) ?>.html" target="_blank" rel="noopener">View</a><?php endif; ?></td>
+            <td><a href="post-edit.php?id=<?= (int)$p['id'] ?>">Edit</a><?php if ($p['published']): ?> · <a href="../<?= h($p['slug']) ?>" target="_blank" rel="noopener">View</a><?php endif; ?></td>
           </tr>
 <?php endforeach; ?>
         </tbody>

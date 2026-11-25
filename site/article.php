@@ -1,5 +1,5 @@
 <?php
-/* One blog article, served at /blog-<slug>.html on cPanel (see .htaccess). */
+/* One blog article, served at /blog-<slug> on cPanel (see .htaccess). */
 declare(strict_types=1);
 require __DIR__ . '/inc/render.php';
 
@@ -17,7 +17,7 @@ if (!$p) {
 }
 
 $base = site_base_url();
-$url = $base . $p['slug'] . '.html';
+$url = $base . $p['slug'];
 $img = $p['image'] !== '' ? $base . $p['image'] : $base . 'assets/img/og-image.png';
 $date = substr((string)$p['published_at'], 0, 10);
 $ld = [
@@ -26,7 +26,7 @@ $ld = [
      'author' => org_ld($base), 'publisher' => org_ld($base), 'mainEntityOfPage' => $url, 'inLanguage' => ['en', 'ar']],
     ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [
         ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => $base],
-        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => $base . 'blog.html'],
+        ['@type' => 'ListItem', 'position' => 2, 'name' => 'Blog', 'item' => $base . 'blog'],
         ['@type' => 'ListItem', 'position' => 3, 'name' => $p['title_en'], 'item' => $url]]],
 ];
 $min = read_minutes($p['body_en']);
@@ -42,7 +42,7 @@ echo page_open($p['title_en'] . ' – Edinam Destiny', $p['title_ar'] !== '' ? $
 ?>
 
       <div class="page-hero-copy">
-        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="blog.html" data-i18n="nav.blog">Blog</a><?php if ($p['category_en'] !== ''): ?><span aria-hidden="true">/</span><?= bi($p['category_en'], $p['category_ar']) ?><?php endif; ?></nav>
+        <nav class="breadcrumb" aria-label="Breadcrumb"><a href="blog" data-i18n="nav.blog">Blog</a><?php if ($p['category_en'] !== ''): ?><span aria-hidden="true">/</span><?= bi($p['category_en'], $p['category_ar']) ?><?php endif; ?></nav>
         <h1><?= bi($p['title_en'], $p['title_ar']) ?></h1>
         <p class="post-meta-light"><?= bi(fmt_date_en((string)$p['published_at']) . ' · ' . $min . ' min read', fmt_date_ar((string)$p['published_at']) . ' · ' . $minAr . ' دقائق قراءة') ?></p>
       </div>
@@ -72,7 +72,7 @@ echo page_open($p['title_en'] . ' – Edinam Destiny', $p['title_ar'] !== '' ? $
             <h2><?= bi($p['cta_en'] !== '' ? $p['cta_en'] : 'Need help at home?', $p['cta_ar'] !== '' ? $p['cta_ar'] : 'تحتاج إلى مساعدة في المنزل؟') ?></h2>
             <p data-i18n="blog.cta.text">Tell us about your home and we’ll send you a plan and a price made for you.</p>
           </div>
-          <a class="btn btn-white" href="services.html#request"><span data-i18n="svcp.build">Build your request</span><span class="arrow" aria-hidden="true"></span></a>
+          <a class="btn btn-white" href="services#request"><span data-i18n="svcp.build">Build your request</span><span class="arrow" aria-hidden="true"></span></a>
         </div>
       </div>
     </section>

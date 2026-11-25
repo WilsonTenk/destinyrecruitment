@@ -1,5 +1,5 @@
 <?php
-/* Blog list, served at /blog.html on cPanel (see .htaccess). */
+/* Blog list, served at /blog on cPanel (see .htaccess). */
 declare(strict_types=1);
 require __DIR__ . '/inc/render.php';
 
@@ -7,15 +7,15 @@ $base = site_base_url();
 $posts = db()->query("SELECT * FROM posts WHERE published = 1 ORDER BY published_at DESC, id DESC")->fetchAll();
 
 $ld = [[
-    '@context' => 'https://schema.org', '@type' => 'Blog', 'name' => 'Edinam Destiny Recruitment blog', 'url' => $base . 'blog.html',
+    '@context' => 'https://schema.org', '@type' => 'Blog', 'name' => 'Edinam Destiny Recruitment blog', 'url' => $base . 'blog',
     'publisher' => org_ld($base), 'inLanguage' => ['en', 'ar'],
     'blogPost' => array_map(function ($p) use ($base) {
-        return ['@type' => 'BlogPosting', 'headline' => $p['title_en'], 'url' => $base . $p['slug'] . '.html', 'datePublished' => substr((string)$p['published_at'], 0, 10)];
+        return ['@type' => 'BlogPosting', 'headline' => $p['title_en'], 'url' => $base . $p['slug'], 'datePublished' => substr((string)$p['published_at'], 0, 10)];
     }, $posts),
 ]];
 
 header('Content-Type: text/html; charset=utf-8');
-echo page_open('Blog – Edinam Destiny Recruitment', '', 'Practical guides for Riyadh families on nannies, housemaids, caregivers and choosing the right home help.', $base . 'blog.html', $ld, 'website', 'title.blog');
+echo page_open('Blog – Edinam Destiny Recruitment', '', 'Practical guides for Riyadh families on nannies, housemaids, caregivers and choosing the right home help.', $base . 'blog', $ld, 'website', 'title.blog');
 ?>
 
       <div class="page-hero-copy">

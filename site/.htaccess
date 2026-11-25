@@ -27,9 +27,22 @@ RedirectMatch 404 /\.git
   RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
   RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 
-  # Blog pages come from the admin database but keep their .html addresses
-  RewriteRule ^blog\.html$ blog.php [L,QSA]
-  RewriteRule ^(blog-[a-z0-9-]+)\.html$ article.php?slug=$1 [L,QSA]
+  # Clean addresses: /services instead of /services.html.
+  # Old .html links (bookmarks, Google, shared links) are sent to the clean address.
+  RewriteCond %{THE_REQUEST} \s/index\.html[\s?#] [NC]
+  RewriteRule ^index\.html$ / [L,R=301]
+  RewriteCond %{THE_REQUEST} \s/([a-z0-9-]+)\.html[\s?#] [NC]
+  RewriteRule ^([a-z0-9-]+)\.html$ /$1 [L,R=301,NC]
+
+  # Blog pages come from the admin database
+  RewriteRule ^blog$ blog.php [L,QSA]
+  RewriteRule ^(blog-[a-z0-9-]+)$ article.php?slug=$1 [L,QSA]
+
+  # Other pages: /services is served from services.html
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}.html -f
+  RewriteRule ^([a-z0-9-]+)$ $1.html [L]
 
   # Private folders (each also has its own "deny" file)
   RewriteRule ^(inc|data)(/|$) - [R=404,L]

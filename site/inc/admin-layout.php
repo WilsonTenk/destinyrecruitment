@@ -41,7 +41,7 @@ function admin_header(string $title, ?array $user = null, string $active = ''): 
 <?php endforeach; ?>
     </nav>
     <div class="topbar-end">
-      <a href="../index.html" target="_blank" rel="noopener">View site</a>
+      <a href="../" target="_blank" rel="noopener">View site</a>
       <form method="post" action="logout.php"><?= csrf_field() ?><button type="submit" class="link-btn">Log out</button></form>
     </div>
   </header>

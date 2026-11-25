@@ -28,7 +28,7 @@ function tpl_parts(): array
     $bottom = substr($tpl, (int)strpos($tpl, '  <footer class="footer">'));
     $bottom = preg_replace('/  <div class="request-bar".*?<\/div>\n\n/s', '', $bottom) ?? $bottom;
     $top = str_replace(' aria-current="page"', '', $top);
-    $top = preg_replace('/<a href="blog\.html" data-i18n="nav\.blog">/', '<a href="blog.html" aria-current="page" data-i18n="nav.blog">', $top, 1) ?? $top;
+    $top = preg_replace('/<a href="blog" data-i18n="nav\.blog">/', '<a href="blog" aria-current="page" data-i18n="nav.blog">', $top, 1) ?? $top;
     return $parts = ['head' => $head, 'top' => $top, 'bottom' => $bottom];
 }
 
@@ -90,7 +90,7 @@ function read_minutes(string $body): int
 
 function post_card(array $p): string
 {
-    $url = h($p['slug']) . '.html';
+    $url = h($p['slug']);
     $img = $p['image'] !== '' ? '<img src="' . h($p['image']) . '" width="800" height="600" alt="" loading="lazy" decoding="async">' : '';
     $min = read_minutes($p['body_en']);
     $minAr = strtr((string)read_minutes($p['body_ar'] ?: $p['body_en']), ['0' => '٠', '1' => '١', '2' => '٢', '3' => '٣', '4' => '٤', '5' => '٥', '6' => '٦', '7' => '٧', '8' => '٨', '9' => '٩']);

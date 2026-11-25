@@ -14,11 +14,16 @@ if (preg_match('#^/(inc|data)(/|$)#', $path) || preg_match('#\.(sqlite|md|yml)$#
     readfile($root . '/404.html');
     return true;
 }
-if ($path === '/blog.html') {
+// Old .html addresses go to the clean address, like the .htaccess rules
+if (preg_match('#^/([a-z0-9-]+)\.html$#i', $path, $m)) {
+    header('Location: ' . ($m[1] === 'index' ? '/' : '/' . $m[1]), true, 301);
+    return true;
+}
+if ($path === '/blog') {
     require $root . '/blog.php';
     return true;
 }
-if (preg_match('#^/(blog-[a-z0-9-]+)\.html$#', $path, $m)) {
+if (preg_match('#^/(blog-[a-z0-9-]+)$#', $path, $m)) {
     $_GET['slug'] = $m[1];
     $_SERVER['SCRIPT_NAME'] = '/article.php';
     require $root . '/article.php';
@@ -29,6 +34,10 @@ if ($path === '/') {
 }
 if (is_file($root . $path)) {
     return false;
+}
+if (preg_match('#^/[a-z0-9-]+$#', $path) && is_file($root . $path . '.html')) {
+    readfile($root . $path . '.html');
+    return true;
 }
 if (is_dir($root . $path) && is_file($root . rtrim($path, '/') . '/index.php')) {
     $_SERVER['SCRIPT_NAME'] = rtrim($path, '/') . '/index.php';

@@ -178,7 +178,7 @@ admin_header($post && !empty($post['id']) ? 'Edit article' : 'New article', $use
         <div class="actions">
           <button class="btn btn-orange" type="submit">Save</button>
 <?php if (!empty($post['published']) && !empty($post['slug'])): ?>
-          <a class="btn btn-ghost" href="../<?= $v('slug') ?>.html" target="_blank" rel="noopener">View on site</a>
+          <a class="btn btn-ghost" href="../<?= $v('slug') ?>" target="_blank" rel="noopener">View on site</a>
 <?php endif; ?>
         </div>
       </div>
